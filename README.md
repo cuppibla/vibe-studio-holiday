@@ -14,11 +14,7 @@ published to VibeTube with the poster as its thumbnail.
 The walkthrough is a codelab, kept in its own repository with its figures.
 Every edit, its hint and its verify rows are also on the workbench pages, so
 the lab runs from them alone: in-page editors, runners and verify panels,
-served by `scripts/start.sh` at http://localhost:4600. It is a cut of
-[Lin's Haunted Edition](https://github.com/weimeilin79/vibe-studio-lab)
-(`haunted-edition-v2`): the same graph, re-cut around the multimodal line and
-the two kinds of suspension, and re-dressed from Halloween for the whole
-holiday season, Thanksgiving to New Year's Eve.
+served by `scripts/start.sh`.
 
 ## What it teaches
 
@@ -37,7 +33,7 @@ holiday season, Thanksgiving to New Year's Eve.
 git clone https://github.com/cuppibla/vibe-studio-holiday
 cd vibe-studio-holiday
 ./setup_project.sh              # a Google Cloud project with billing, recorded in ~/project_id.txt
-./setup_codelab.sh              # uv + deps, the APIs, .env, one model call, then the workbench in the background on :4600
+./setup_codelab.sh              # uv + deps, the APIs, .env, one model call, then the workbench in the background
 ```
 
 Both scripts can be run again; the second keeps the answers you gave before. It asks for the VibeTube room (the event code; `sandbox` is always open) and your display name, and ends with `python scripts/preflight.py`, whose last line is the link to session 1. `scripts/stop.sh` stops the workbench, `scripts/start.sh` starts it again, and `scripts/restart.sh --pull` does both around a pull.
@@ -63,7 +59,7 @@ Then reload the browser tab. Without `--pull` it just restarts. It prints the li
 The app of session 7 runs on its own:
 
 ```bash
-vibestudio/run.sh               # the app on http://localhost:4700
+vibestudio/run.sh               # the app on its own
 python vibestudio/deploy.py     # the same app on Cloud Run (or the button on 7a)
 ```
 
@@ -102,11 +98,11 @@ vibe-studio-holiday/
 │   ├── stage6_video/agent.py       # session 5: the whole graph, the gate and the desk
 │   └── stage4_memory/agent.py      # session 6: the graph with the two callbacks
 ├── starter/                        # the nine student files with their TODO lines; the live copies are not in git
-├── server/ & web/                  # the workbench (FastAPI + React, port 4600)
+├── server/ & web/                  # the workbench (FastAPI + React)
 ├── vibestudio/                     # the app deployed in session 7, with its own copy of agent/
 │   ├── server/                     # FastAPI: the Runner over the finished graph, the event bus, publish
 │   ├── web/                        # the creator's page
-│   ├── run.sh                      # the app locally on 4700
+│   ├── run.sh                      # the app locally
 │   └── deploy.py                   # gcloud run deploy, with the env the graph needs
 ├── checks/                         # the hole registry and the verifiers
 │   ├── holes.py                    # the twelve holes: file, shipped line, answer
@@ -150,4 +146,4 @@ When a hole changes: update `checks/holes.py`, update the codelab block, run `sc
 
 The nine files students edit (`agent/graph.py`, `agent/deliver.py`, `agent/platform/audience.py`, `stage*/agent.py`) are listed in `.gitignore` and never committed: setup and `scripts/start.sh` copy them from `starter/` when they are missing and leave existing ones alone, so a tree filled in while testing cannot reach a commit. `starter/` is the file that ships. The readers' output files under `agent/audience/` are ignored the same way; the fixture ships without them.
 
-`scripts/dev.sh` runs the workbench with hot reload (the API on 4600, Vite on 5173). The codelab's figures, their sources and its `claat` build live with the codelab.
+`scripts/dev.sh` runs the workbench with hot reload. The codelab's figures, their sources and its `claat` build live with the codelab.
