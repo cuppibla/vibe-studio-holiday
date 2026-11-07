@@ -25,7 +25,7 @@ const CYAN = COLORS.cyan;
 const GREEN = COLORS.green;
 const mono = { fontFamily: "var(--font-mono)" } as const;
 
-const DEFAULT_SUSPEND_IDEA = "a bat moves into the desk lamp";
+const DEFAULT_SUSPEND_IDEA = "a robin moves into the string lights";
 
 /** The one table of the session: the same mechanism, twice. */
 const ROWS: { what: string; person: string; tool: string }[] = [

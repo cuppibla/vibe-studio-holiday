@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 64" width="240" height="64" role="img" aria-label="VibeStudio, Holiday Special">
+  <!-- the clapperboard under one snowflake (dark theme). Same silhouette as the mark it replaces. -->
+  <g transform="translate(4 6)">
+    <path d="M15 -3v10M10.7 -0.5l8.6 5M10.7 4.5l8.6 -5" fill="none" stroke="#c4a8ff" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M4 18 L10 7 H48 L42 18 Z" fill="#2f2850"/>
+    <path d="M17 7.5l4.5 10.5M28 7.5l4.5 10.5M39 7.5l4.5 10.5" stroke="#fbf8ff" stroke-width="2.8" stroke-linecap="round"/>
+    <rect x="4" y="18" width="44" height="30" rx="7" fill="#ff7b93"/>
+    <path d="M13 28h26M13 37h16" stroke="#fff3df" stroke-width="3.2" stroke-linecap="round"/>
+  </g>
+  <text x="64" y="40" font-family="Archivo, system-ui, sans-serif" font-weight="900" font-size="26" letter-spacing="-0.5" fill="#f6efe3">Vibe<tspan fill="#ff7b93">Studio</tspan></text>
+  <text x="66" y="58" font-family="Caveat Brush, Archivo, system-ui, sans-serif" font-size="18" fill="#b9e4a0">Holiday Special</text>
+</svg>

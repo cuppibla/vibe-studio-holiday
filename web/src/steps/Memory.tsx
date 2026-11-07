@@ -11,7 +11,7 @@ import { COLORS, tint } from "./colors";
 import { CheckRow, EditPanel, RunPanel, VerifyPanel } from "./FanOut";
 
 /*
- * Step 5a and 5b, composed by steps/GhostWhispers.tsx:
+ * Step 5a and 5b, composed by steps/MemoryPage.tsx:
  *   TheBank       5a  Memory Bank: what it is for, scope, extraction and consolidation,
  *                     the three topics (the third is the creator's taste in posters);
  *                     create the bank and seed the creator's history from the console

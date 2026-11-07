@@ -1,6 +1,6 @@
 # What the audience sent
 
-Forty things in four kinds, all about the channel's six Halloween videos. Each kind has a reader in
+Forty things in four kinds, all about the channel's six holiday videos. Each kind has a reader in
 `agent/platform/audience.py` that turns it into one line of text for the corpus; the manifest is `manifest.json`.
 
 | kind | count | how |

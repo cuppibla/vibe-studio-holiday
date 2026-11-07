@@ -1,6 +1,6 @@
-# VibeStudio · Multimodal agentic workflow with ADK, Haunted Edition
+# VibeStudio · Multimodal agentic workflow with ADK, Holiday Special
 
-The workbench for the **VibeStudio** codelab. You run a cozy-spooky short-video
+The workbench for the **VibeStudio** codelab. You run a cozy holiday short-video
 channel, and over seven sessions you build the workflow that runs it with the
 Agent Development Kit: one agent that draws the first poster, a research
 fan-out and a router with a task-mode loop behind it, a multimodal ingestion
@@ -16,8 +16,9 @@ Every edit, its hint and its verify rows are also on the workbench pages, so
 the lab runs from them alone: in-page editors, runners and verify panels,
 served by `scripts/start.sh` at http://localhost:4600. It is a cut of
 [Lin's Haunted Edition](https://github.com/weimeilin79/vibe-studio-lab)
-(`haunted-edition-v2`): the same theme, the same graph, re-cut around the
-multimodal line and the two kinds of suspension.
+(`haunted-edition-v2`): the same graph, re-cut around the multimodal line and
+the two kinds of suspension, and re-dressed from Halloween for the whole
+holiday season, Thanksgiving to New Year's Eve.
 
 ## What it teaches
 
@@ -33,8 +34,8 @@ multimodal line and the two kinds of suspension.
 ## Run it
 
 ```bash
-git clone https://github.com/cuppibla/vibe-studio-multimodal
-cd vibe-studio-multimodal
+git clone https://github.com/cuppibla/vibe-studio-holiday
+cd vibe-studio-holiday
 ./setup_project.sh              # a Google Cloud project with billing, recorded in ~/project_id.txt
 ./setup_codelab.sh              # uv + deps, the APIs, .env, one model call, then the workbench in the background on :4600
 ```
@@ -71,14 +72,14 @@ The app sends ADK's traces to Cloud Trace in your project (Trace Explorer, servi
 ## Repository layout
 
 ```
-vibe-studio-multimodal/
+vibe-studio-holiday/
 ├── agent/                          # the workflow and the platform clients
 │   ├── graph.py                    # the graph: three readers, the proposer, the gate, the router, the script, the desk
 │   ├── desk.py                     # render_desk and render_submit, the LongRunningFunctionTool
 │   ├── deliver.py                  # the delivery console: find the pending call, wait for Veo, answer by id
 │   ├── schemas.py                  # Direction, Directions, CleanedDirection, Script, each with a poster idea
-│   ├── trends.py                   # the trend pool (five Halloween looks) and the sampler
-│   ├── backlog.txt                 # the creator's Halloween ideas
+│   ├── trends.py                   # the trend pool (five holiday looks) and the sampler
+│   ├── backlog.txt                 # the creator's holiday ideas
 │   ├── comments.md                 # twelve audience comments, the text half of what they sent
 │   ├── audience/                   # the rest: voice/*.mp3, photo/*.jpg, clip/*.mp4 (scripts/make_audience.py)
 │   ├── media/past/                 # six past posters and captions.md, what Gemini sees in each
@@ -114,8 +115,8 @@ vibe-studio-multimodal/
 │   ├── verify_reload.py            # a save-time reload keeps every schema class and stage app
 │   └── verify_app.py               # vibestudio/server/agent/ equals the finished lab agent
 ├── scripts/                        # setup, start/stop/restart, preflight, starter, rescue/carve, reset,
-│                                   # make_audience.py (the fixture), gen_halloween_art.py (the page art)
-└── img/                            # hero.gif and haunted/: the hero, the logos, the stand-in poster images.py falls back to
+│                                   # make_audience.py (the fixture), placeholders.py (stand-in posters)
+└── img/                            # holiday/: the hero, the logos, the stand-in poster images.py falls back to
 ```
 
 ## The holes

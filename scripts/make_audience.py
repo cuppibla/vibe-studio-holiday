@@ -3,10 +3,10 @@
     python scripts/make_audience.py            everything missing under agent/audience/
     python scripts/make_audience.py --force    regenerate even what exists
 
-Four kinds, forty things, all about the channel's six past Halloween videos:
+Four kinds, forty things, all about the channel's six past holiday videos:
   comments   12 lines  agent/comments.md (the file the lab always read; rewritten here once)
   voice       8 mp3    Gemini TTS, a different voice each, the viewer talking
-  photo      14 jpg    the viewer's own room: a sock drawer, a porch bucket, a carving night …
+  photo      14 jpg    the viewer's own home: a freezer drawer, a porch in the first snow, a burnt pie …
                        (drawn once with the lab's image model in the channel's look; copied in)
   clip        6 mp4    a slow pan over one of the photos with the viewer's voice over it (ffmpeg)
 
@@ -30,53 +30,53 @@ sys.path.insert(0, str(ROOT))
 from agent.platform import config  # noqa: E402  (loads .env)
 
 AUD = ROOT / "agent" / "audience"
-PHOTO_SRC = pathlib.Path(os.environ.get("AUDIENCE_PHOTO_SRC", str(pathlib.Path.home() / "Documents/creator-space/Topics/vibestudio-multimodal/_preview/art/batch")))
+PHOTO_SRC = pathlib.Path(os.environ.get("AUDIENCE_PHOTO_SRC", str(pathlib.Path.home() / "Documents/creator-space/Topics/vibestudio-multimodal/_preview/holiday/batch")))
 TTS_MODEL = os.environ.get("STUDIO_TTS_MODEL", "gemini-2.5-flash-preview-tts")
 FORCE = "--force" in sys.argv
 
 COMMENTS = """# Audience comments on past videos
 
-What viewers wrote under the channel's last six videos, the Halloween ones.
+What viewers wrote under the channel's last six videos, the holiday ones.
 Twelve comments, good and bad, in no particular order. This file is one of the
 four kinds of thing in the corpus (agent/audience/): `python -m agent.platform.rag
 load --audience` uploads it with the voice notes, photos and clips the readers
 turned into text, and `read_feedback` retrieves the passages closest to tonight's idea.
 
-- "A tiny ghost learning to haunt a sock drawer" — @lena.draws: The sock floating up one inch at a time is perfect. Small magic in small rooms, please more.
-- "Candy bowl heist, filmed like a bank job" — @quietquinn: Way too dark in the first five seconds. I could not see the raccoon's cape.
-- "My cat judging this year's costumes" — @mira_k: The slow blink at the pumpkin costume is the funniest thing I have seen all week.
-- "Teaching a robot to carve a pumpkin" — @dev_tomas: Honestly this one felt like an ad for the carving kit. Less product, more robot failing.
-- "A bat moves into the desk lamp" — @nightowl_ari: The bat hugging the bulb like a pillow. I replayed it nine times.
-- "The skeleton in the closet just wants a sweater" — @fantasyfern: Did not expect to tear up at a skeleton. The ending where it is finally warm, chef's kiss.
-- "A tiny ghost learning to haunt a sock drawer" — @roro_h: Captions covered the ghost's face for the whole second half. Move the text or drop it.
-- "My cat judging this year's costumes" — @bakerstreet22: Under twenty seconds and it still told a story. Keep them this short.
-- "Candy bowl heist, filmed like a bank job" — @jjthebuilder: The fridge light as the spotlight was the only good part. Cut the rest.
-- "The skeleton in the closet just wants a sweater" — @knitwit: The sweater texture in low-poly looked like actual wool. How?
-- "A bat moves into the desk lamp" — @sleepy.sam: The ending was too fast. Let the bat settle in for one more second.
-- "Teaching a robot to carve a pumpkin" — @pumpkinpat: The crooked face at the end. I want that as the poster.
+- "A tiny snowman learning to live in the freezer" — @lena.draws: The ice cube tray sliding over one inch at a time to make room is perfect. Small magic in small rooms, please more.
+- "Gravy boat heist, filmed like a bank job" — @quietquinn: Way too dark in the first five seconds. I could not see the mouse's cape.
+- "My cat judging this year's holiday sweaters" — @mira_k: The slow blink at the snowflake sweater is the funniest thing I have seen all week.
+- "Teaching a robot to wrap a gift" — @dev_tomas: Honestly this one felt like an ad for the wrapping paper. Less product, more robot failing.
+- "A robin moves into the string lights" — @nightowl_ari: The robin hugging the bulb like a pillow. I replayed it nine times.
+- "The scarecrow after harvest just wants a sweater" — @fantasyfern: Did not expect to tear up at a scarecrow. The ending where it is finally warm, chef's kiss.
+- "A tiny snowman learning to live in the freezer" — @roro_h: Captions covered the snowman's face for the whole second half. Move the text or drop it.
+- "My cat judging this year's holiday sweaters" — @bakerstreet22: Under twenty seconds and it still told a story. Keep them this short.
+- "Gravy boat heist, filmed like a bank job" — @jjthebuilder: The fridge light as the spotlight was the only good part. Cut the rest.
+- "The scarecrow after harvest just wants a sweater" — @knitwit: The sweater texture in low-poly looked like actual wool. How?
+- "A robin moves into the string lights" — @sleepy.sam: The ending was too fast. Let the robin settle in for one more second.
+- "Teaching a robot to wrap a gift" — @ribbonpat: The crooked bow at the end. I want that as the poster.
 """
 
 VOICE_NOTES = [
-    ("note-01", "Kore", "The sock ghost one made my kid laugh so hard. Please do more small magic in small rooms."),
-    ("note-02", "Puck", "Candy heist was perfect, but it was way too dark at the start. I couldn't see the raccoon."),
-    ("note-03", "Zephyr", "I want a whole series of the cat judging costumes. The slow blink at the pumpkin costume. Chef's kiss."),
-    ("note-04", "Charon", "Pumpkin robot felt like an ad for the carving kit. Less product, more robot being bad at it."),
-    ("note-05", "Fenrir", "The bat in the lamp was so cozy. Can you do one where it moves into the fridge light next?"),
-    ("note-06", "Aoede", "Skeleton sweater made me tear up. The ending where it finally gets warm. More endings like that."),
-    ("note-07", "Leda", "The captions covered the ghost's face for the whole second half. Move the text, or drop it."),
-    ("note-08", "Orus", "Idea for you: the doorbell that only rings for ghosts. Filmed like a security camera."),
+    ("note-01", "Kore", "The freezer snowman one made my kid laugh so hard. Please do more small magic in small rooms."),
+    ("note-02", "Puck", "Gravy heist was perfect, but it was way too dark at the start. I couldn't see the mouse."),
+    ("note-03", "Zephyr", "I want a whole series of the cat judging sweaters. The slow blink at the snowflake sweater. Chef's kiss."),
+    ("note-04", "Charon", "The gift robot felt like an ad for the wrapping paper. Less product, more robot being bad at it."),
+    ("note-05", "Fenrir", "The robin in the lights was so cozy. Can you do one where it moves into the fridge light next?"),
+    ("note-06", "Aoede", "Scarecrow sweater made me tear up. The ending where it finally gets warm. More endings like that."),
+    ("note-07", "Leda", "The captions covered the snowman's face for the whole second half. Move the text, or drop it."),
+    ("note-08", "Orus", "Idea for you: the doorbell that only rings for snowmen. Filmed like a security camera."),
 ]
 
-PHOTOS = ["ghost-drawer", "costume-cat", "desk-pumpkin", "candy-heist", "porch-bucket", "ghost-sheet-kid", "bat-lamp",
-          "pumpkin-carving", "haunted-plant", "skeleton-closet", "fridge-midnight", "desk-toys-party", "snail-ghost", "doorbell-ghost"]
+PHOTOS = ["freezer-snowman", "sweater-cat", "desk-lights", "gravy-heist", "porch-lantern", "blanket-fort-kid", "robin-lights",
+          "burnt-pie", "decorated-plant", "scarecrow-sweater", "fridge-leftovers", "desk-toys-countdown", "snail-scarf", "doorbell-snowman"]
 
 CLIPS = [
-    ("clip-01", "photo-01-ghost-drawer", "Kore", "Look, I set up my own sock drawer like the video. The ghost is a paper cup."),
-    ("clip-02", "photo-05-porch-bucket", "Puck", "Our porch tonight. The bucket is already half empty, and it's only seven."),
-    ("clip-03", "photo-08-pumpkin-carving", "Zephyr", "Carving night. My cat is supervising. She does not approve of the face."),
-    ("clip-04", "photo-11-fridge-midnight", "Charon", "Midnight fridge check. Something moved the candy bowl to the top shelf. Not me."),
-    ("clip-05", "photo-13-snail-ghost", "Fenrir", "The snail won. The vacuum gave up at the rug. Best three minutes of my week."),
-    ("clip-06", "photo-14-doorbell-ghost", "Aoede", "Our doorbell rang twice tonight, and nobody was there. I love it."),
+    ("clip-01", "photo-01-freezer-snowman", "Kore", "Look, I set up my own freezer like the video. The snowman is a marshmallow."),
+    ("clip-02", "photo-05-porch-lantern", "Puck", "Our porch tonight. First snow, and the parcel got here before we did."),
+    ("clip-03", "photo-08-burnt-pie", "Zephyr", "Pie night. My cat is supervising. She does not approve of the crust."),
+    ("clip-04", "photo-11-fridge-leftovers", "Charon", "Midnight fridge check. Something moved the gravy boat to the top shelf. Not me."),
+    ("clip-05", "photo-13-snail-scarf", "Fenrir", "The snail won. The vacuum gave up at the rug. Best three minutes of my week."),
+    ("clip-06", "photo-14-doorbell-snowman", "Aoede", "Our doorbell rang twice tonight, and nobody was there. Just a snowman. I love it."),
 ]
 
 
@@ -121,9 +121,9 @@ def main() -> None:
     tmp = AUD / "_tmp"; tmp.mkdir(exist_ok=True)
 
     comments = ROOT / "agent" / "comments.md"
-    if FORCE or "Halloween ones" not in comments.read_text():
+    if FORCE or "the holiday ones" not in comments.read_text():
         comments.write_text(COMMENTS); made["comments"] = 12
-        print("  comments.md: 12 Halloween comments")
+        print("  comments.md: 12 holiday comments")
 
     client = None
     for name, voice, text in VOICE_NOTES:
@@ -160,13 +160,13 @@ def main() -> None:
 
     shutil.rmtree(tmp, ignore_errors=True)
     manifest = {
-        "comments": {"file": "agent/comments.md", "count": 12, "how": "written for the six Halloween videos"},
+        "comments": {"file": "agent/comments.md", "count": 12, "how": "written for the six holiday videos"},
         "voice": [{"file": f"voice/{n}.mp3", "voice": v, "text": t, "how": f"Gemini TTS ({TTS_MODEL})"} for n, v, t in VOICE_NOTES],
         "photo": [{"file": f"photo/photo-{i:02d}-{n}.jpg", "how": "Nano Banana, the channel's low-poly look, a viewer's point of view"} for i, n in enumerate(PHOTOS, 1)],
         "clip": [{"file": f"clip/{n}.mp4", "over": f"photo/{p}.jpg", "voice": v, "text": t, "how": "ffmpeg: a slow push-in over the photo, the voice over it"} for n, p, v, t in CLIPS],
     }
     (AUD / "manifest.json").write_text(json.dumps(manifest, indent=1))
-    lines = ["# What the audience sent", "", "Forty things in four kinds, all about the channel's six Halloween videos. Each kind has a reader in",
+    lines = ["# What the audience sent", "", "Forty things in four kinds, all about the channel's six holiday videos. Each kind has a reader in",
              "`agent/platform/audience.py` that turns it into one line of text for the corpus; the manifest is `manifest.json`.", "",
              "| kind | count | how |", "|---|---|---|", "| comments | 12 | agent/comments.md, written for the six videos |",
              f"| voice notes | {len(VOICE_NOTES)} | Gemini TTS ({TTS_MODEL}), one voice each |",

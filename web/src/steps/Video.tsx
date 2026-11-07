@@ -293,7 +293,7 @@ def store_release(node_input, poster_url: str = "", poster_path: str = ""):
                 state={"render_url": url, "render_status": status, "poster_url": poster_url},
                 message=f"video: {said} · poster: {poster_url or 'none'}")`;
 
-const DEFAULT_VIDEO_IDEA = "a tiny ghost learning to haunt the sock drawer";
+const DEFAULT_VIDEO_IDEA = "a tiny snowman learning to live in the freezer";
 
 /** The share: one node writes a key, a later node names it as a parameter. */
 function StateShareFigure() {

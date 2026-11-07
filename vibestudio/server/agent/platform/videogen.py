@@ -55,9 +55,9 @@ class VideoError(RuntimeError):
 
 #: The channel's look, said once at the end of every render prompt, after the
 #: shots (the script's own `style` line rides a trend; this is the house).
-HALLOWEEN_LOOK = ("Cute low-poly 3D animation, faceted shapes with soft flat shading, cozy Halloween at "
-                  "dusk: pumpkin orange and candlelight cream against midnight plum, paper bats, a "
-                  "friendly sheet ghost, gentle camera drift, soft candle flicker. No gore, no jump scares.")
+HOLIDAY_LOOK = ("Cute low-poly 3D animation, faceted shapes with soft flat shading, a snowy winter "
+                "evening at dusk: candlelight gold and cranberry red against lavender dusk, warm string "
+                "lights, slow falling snow, gentle camera drift, soft candle flicker. Cozy and warm, nothing scary.")
 
 
 def build_prompt(script: Any) -> str:
@@ -73,7 +73,7 @@ def build_prompt(script: Any) -> str:
         parts.append("The video, in order: " + " Then ".join(sh.rstrip(".") + "." for sh in shots))
     if s.get("style"):
         parts.append(f"Look: {s['style']}.")
-    parts.append(HALLOWEEN_LOOK)
+    parts.append(HOLIDAY_LOOK)
     parts.append(NO_TEXT)
     return " ".join(p.strip() for p in parts if p.strip())
 

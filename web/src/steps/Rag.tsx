@@ -76,8 +76,8 @@ const DOTS: { x: number; y: number; c: string }[] = [
   { x: 62, y: 66, c: GREEN }, { x: 74, y: 60, c: GREEN }, { x: 70, y: 74, c: GREEN }, { x: 82, y: 70, c: GREEN },
   { x: 116, y: 62, c: "currentColor" }, { x: 46, y: 58, c: "currentColor" }, { x: 12, y: 70, c: "currentColor" },
 ];
-const QUERY = "cozy little hauntings at home";
-const NEAREST = ["small magic in small rooms, please more", "the bat hugging the bulb like a pillow", "heard: \"the ghost is a paper cup\""];
+const QUERY = "cozy little disasters at home";
+const NEAREST = ["small magic in small rooms, please more", "the robin hugging the bulb like a pillow", "heard: \"the snowman is a marshmallow\""];
 
 /** Indexing: a document is split into passages, each passage is embedded into a
  *  vector, the vectors land in the store. Asking: the question takes the same
@@ -192,7 +192,7 @@ function MeaningFigure() {
         </button>
         <figcaption className="text-xs text-fg-muted">
           {asking
-            ? "Nearby vectors mean similar meaning, so the sock-drawer comment comes back for a question that never says sock or drawer."
+            ? "Nearby vectors mean similar meaning, so the freezer-snowman comment comes back for a question that never says freezer or snowman."
             : "Indexing splits the file into passages, embeds each passage into a vector, and stores the vectors. Vector proximity corresponds to semantic similarity."}
         </figcaption>
       </div>
@@ -954,10 +954,10 @@ const ANSWER_READERS = `READERS = [
     transcribe_voice, caption_photos, watch_clips,
 ]`;
 
-const LINE_SHAPE = `- voice: note-03.mp3 — "I want a whole series of the cat judging costumes …" mood: delighted
-- photo: photo-01-ghost-drawer.jpg — A cream wooden drawer, striped socks, a paper-cup ghost … tags: drawer, socks, cozy
-- clip:  clip-05.mp4 — A hallway floor, a snail in a sheet and a round vacuum … heard: "The snail won."
-- poster: sock-ghost.png — A sheet ghost one inch above a striped sock …`;
+const LINE_SHAPE = `- voice: note-03.mp3 — "I want a whole series of the cat judging sweaters …" mood: delighted
+- photo: photo-01-freezer-snowman.jpg — A white freezer drawer, an ice cube tray, a small snowman in a red scarf … tags: freezer, snowman, cozy
+- clip:  clip-05.mp4 — A hallway floor, a snail in a scarf and a round vacuum … heard: "The snail won."
+- poster: freezer-snowman.png — A tiny snowman in an open freezer drawer, between two ice cube trays …`;
 
 /** The checks for 4a: the readers in the file, what they read, what the corpus holds. */
 function CorpusVerify({ grid, refreshKey }: { grid: AudienceGrid | null; refreshKey: number }) {
@@ -1203,7 +1203,7 @@ const CODE_INSTRUCTION = `# agent/graph.py · PROPOSE_INSTRUCTION, the lines abo
 ...
 "Every evidence entry must cite a REAL source: 'trends', 'backlog', 'feedback', ..."`;
 
-const DEFAULT_RAG_IDEA = "a ghost learning to haunt the fridge light";
+const DEFAULT_RAG_IDEA = "a robin moving into the fridge light";
 
 const ANSWER_READ_FEEDBACK = `def read_feedback(node_input):
     """The third reader: what the audience sent - comments, and what Gemini
@@ -1326,7 +1326,7 @@ function NodeRetrievalFigure() {
             <path d="M0 0 L10 5 L0 10 z" fill="currentColor" />
           </marker>
         </defs>
-        {box(6, 24, 176, 56, "tonight's idea", "“a ghost in the fridge light”", AMBER)}
+        {box(6, 24, 176, 56, "tonight's idea", "“a robin in the fridge light”", AMBER)}
         <line x1="182" y1="52" x2="248" y2="52" stroke="currentColor" strokeOpacity="0.6" strokeWidth="1.2" markerEnd="url(#nr-arrow)" />
         <text x="215" y="44" textAnchor="middle" fontSize="8" style={mono} fill="currentColor" opacity="0.6">node_input</text>
         {box(250, 24, 156, 56, "read_feedback", "a function node", CYAN)}

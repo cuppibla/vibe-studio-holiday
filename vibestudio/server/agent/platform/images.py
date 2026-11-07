@@ -28,17 +28,18 @@ MODEL = os.environ.get("STUDIO_IMAGE_MODEL", "gemini-2.5-flash-image")
 REAL = os.environ.get("STUDIO_REAL_IMAGES", "1").lower() in ("1", "true")
 POSTER_DIR = pathlib.Path(os.environ.get("STUDIO_POSTER_DIR") or (config.RUNS / "media" / "posters"))
 WEB_PREFIX = "/static/posters"
-STANDIN = config.ROOT / "img" / "haunted" / "poster-standin.png"
+STANDIN = config.ROOT / "img" / "holiday" / "poster-standin.png"
 ASPECT = "9:16"                      # a VibeTube short is vertical, and so is its poster
 
 # The look of every poster the channel draws: the lab's own cozy low-poly
-# Halloween world. Tested 2026-10-18: a sheet ghost over a sock drawer, 8 s. Subject and taste are appended per call.
+# winter world. It names winter and one light source and leaves every other prop to the
+# subject, and it never says "holiday": that word alone makes the image model add a Christmas
+# tree. Tested 2026-11-06 on four subjects, 7 s each. Subject and taste are appended per call.
 STYLE = ("Cute low-poly 3D render: faceted geometric shapes with soft flat shading, round friendly "
-         "characters with big glossy eyes, a tiny cozy Halloween scene at dusk - a faceted "
-         "jack-o'-lantern with warm candlelight, a friendly sheet ghost, paper bats, soft cobweb "
-         "corners, candy corn, a big pale full moon - in pumpkin orange, candlelight cream, midnight "
-         "plum, bone white, mint and lavender, soft studio light, gentle contact shadows. Vertical "
-         "poster for a short video: one clear subject centered, the rest calm. Cozy, never scary. "
+         "characters with big glossy eyes, a tiny cozy scene on a snowy winter evening at dusk, lit "
+         "by warm string lights - in cranberry red, pine green, candlelight gold, snow white, cocoa "
+         "brown and lavender dusk, soft studio light, gentle contact shadows. Vertical poster for a "
+         "short video: one clear subject, large and centered, the rest calm. Cozy and warm. "
          "No text, no letters, no logos, no watermark.")
 
 

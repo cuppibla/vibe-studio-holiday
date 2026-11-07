@@ -85,7 +85,7 @@ deepfake
 impersonate
 swatting
 plagiarism
-# the season's additions: cozy-spooky, never scary-scary
+# the season's additions: cozy, never scary
 jump scare
 strobe
 chainsaw

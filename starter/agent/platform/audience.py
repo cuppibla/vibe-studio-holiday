@@ -13,9 +13,9 @@ comes back the file comes back with it (rag.media_in). One reader per kind:
 Every reader writes the same line shape, so chunking, embedding and retrieval
 never know which kind a passage came from:
 
-    - voice: note-03.mp3 — "I want a whole series of the cat judging costumes …" mood: delighted
-    - photo: photo-01-ghost-drawer.jpg — A cream wooden drawer, striped socks, a paper-cup ghost … tags: drawer, socks, cozy
-    - clip: clip-05.mp4 — A hallway floor, a snail in a sheet and a round vacuum … heard: "The snail won …"
+    - voice: note-03.mp3 — "I want a whole series of the cat judging sweaters …" mood: delighted
+    - photo: photo-01-freezer-snowman.jpg — A white freezer drawer, an ice cube tray, a small snowman in a red scarf … tags: freezer, snowman, cozy
+    - clip: clip-05.mp4 — A hallway floor, a snail in a scarf and a round vacuum … heard: "The snail won …"
 
 READERS is the list the ingestion runs (python -m agent.platform.rag load --audience).
 As shipped only the comments are read; the other three sit behind one "# ".

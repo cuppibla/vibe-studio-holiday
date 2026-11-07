@@ -1,4 +1,4 @@
-"""Step 5a - the ghost remembers. The step 4 graph, unchanged, plus two callbacks.
+"""Step 5a - the channel remembers. The step 4 graph, unchanged, plus two callbacks.
 
 Memory is not a node. propose_directions reads the creator's memories before
 its model call (before_model_callback) and scripter writes what the creator

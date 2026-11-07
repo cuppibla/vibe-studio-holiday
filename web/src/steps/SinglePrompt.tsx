@@ -44,8 +44,8 @@ root_agent = Agent(
     name="solo_channel", model=config.MODEL,     # model: gemini-3-flash-preview
     tools=[check_trends, read_backlog, make_poster],   # tools: two readers, one that draws
     instruction=(                                # instruction: the pipeline as prose
-        "You run the creator's cozy-spooky short-video channel, alone, every "
-        "night until Halloween.\n"
+        "You run the creator's cozy holiday short-video channel, alone, every "
+        "night until New Year's Eve.\n"
         "When the creator gives you an idea (or nothing), do ALL of this:\n"
         "check what is trending. look at your backlog of ideas. propose a "
         "direction and agree on it with the creator. refuse blacklisted "
@@ -176,14 +176,14 @@ def backlog_notes() -> list[str]:
     return [l.strip() for l in BACKLOG_FILE.read_text().splitlines()
             if l.strip() and not l.startswith("#")]      # agent/backlog.txt`;
 
-const DEFAULT_IDEA = "a tiny ghost learning to haunt a sock drawer";
+const DEFAULT_IDEA = "a tiny snowman learning to live in the freezer";
 const INSPECTOR_URL = "/inspector/dev-ui/?app=stage0_prompt";
 
 const CODE_IMAGES = `# agent/platform/images.py
 MODEL = os.environ.get("STUDIO_IMAGE_MODEL", "gemini-2.5-flash-image")   # Nano Banana
 ASPECT = "9:16"                      # a VibeTube short is vertical, and so is its poster
-STYLE = ("Cozy low-poly 3D render, faceted flat-shaded polygons ... pastel dusk "
-         "palette ... Vertical poster for a short video: one clear subject centered ...")
+STYLE = ("Cute low-poly 3D render: faceted geometric shapes ... a tiny cozy scene on a snowy winter "
+         "evening at dusk ... Vertical poster for a short video: one clear subject, large and centered ...")
 
 def generate(subject: str, visual_style: str = "", name: str | None = None) -> dict:
     """One poster for \`subject\`. Returns where it landed: status, path, url,
@@ -308,7 +308,7 @@ export function ToolsEditRun() {
             </li>
             <li>
               <b className="text-fg">The image model</b>: a house style prefix, the subject, a vertical frame. With no key or{" "}
-              <code className="font-mono text-fg">STUDIO_REAL_IMAGES=0</code> a stand-in pumpkin poster is copied instead, flagged{" "}
+              <code className="font-mono text-fg">STUDIO_REAL_IMAGES=0</code> a stand-in poster is copied instead, flagged{" "}
               <code className="font-mono text-fg">prebaked</code>, so the lab runs anywhere.
             </li>
           </ul>

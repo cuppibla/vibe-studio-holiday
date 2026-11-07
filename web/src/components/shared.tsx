@@ -35,7 +35,7 @@ export function Kicker({ children, color = "var(--color-vibe-cyan)" }: { childre
 }
 
 /** Standard page header used by every step. With `art`, a picture sits
- *  beside the title (the haunted hero on the first page, a poster later). */
+ *  beside the title (the holiday hero on the first page, a poster later). */
 export function StepHeader({
   kicker,
   title,
@@ -57,7 +57,7 @@ export function StepHeader({
           <h1 className="font-display text-balance mt-3 text-3xl leading-tight md:text-5xl">{title}</h1>
           {blurb && <p className="mt-4 max-w-2xl text-balance text-base text-fg-muted md:text-lg">{blurb}</p>}
         </div>
-        <div className="haunted-art">{art}</div>
+        <div className="holiday-art">{art}</div>
       </In>
     );
   }

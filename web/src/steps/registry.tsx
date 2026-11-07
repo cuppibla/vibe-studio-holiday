@@ -18,7 +18,7 @@ export interface Step {
   element: ReactNode;
   /** Text on the Next button leading out of this step. */
   nextLabel?: string;
-  /** The session's header picture (16:9), under web/public/haunted/scenes. */
+  /** The session's header picture (16:9), under web/public/holiday/scenes. */
   art?: string;
   /** The band at the top: one headline, one sentence, the three things you do here. */
   header?: { title: string; one: ReactNode; does: Does[] };
@@ -39,9 +39,9 @@ export interface Step {
  * fills are keyed by these slugs and parts (checks/holes.py).
  */
 export const STEPS: Step[] = [
-  { slug: "story", art: "/haunted/scenes/scene-1-story.jpg", label: "The story", color: COLORS.cyan, element: <Story />, nextLabel: "Generate the first poster" },
+  { slug: "story", art: "/holiday/scenes/scene-1-story.jpg", label: "The story", color: COLORS.cyan, element: <Story />, nextLabel: "Generate the first poster" },
   {
-    slug: "image", art: "/haunted/scenes/scene-2-image.jpg",
+    slug: "image", art: "/holiday/scenes/scene-2-image.jpg",
     label: "Image generation",
     color: COLORS.blue,
     element: <ImageGen />,
@@ -68,7 +68,7 @@ export const STEPS: Step[] = [
         { text: "Run the OK route and the BLOCK route; watch quarantine clean the direction", where: "run" },
       ],
     },
-    art: "/haunted/scenes/scene-3-workflows.jpg",
+    art: "/holiday/scenes/scene-3-workflows.jpg",
     label: "Workflows",
     color: COLORS.amber,
     element: <Workflows />,
@@ -88,7 +88,7 @@ export const STEPS: Step[] = [
         { text: "Ingest again, run: 8 voice · 14 photos · 6 clips read, and the media comes back with the passages", where: "verify" },
       ],
     },
-    art: "/haunted/scenes/scene-4-ingestion.jpg",
+    art: "/holiday/scenes/scene-4-ingestion.jpg",
     label: "Multimodal ingestion",
     color: COLORS.purple,
     element: <Ingestion />,
@@ -108,7 +108,7 @@ export const STEPS: Step[] = [
         { text: <>Edit <code>make_poster</code>: write <code>poster_url</code> to state; the release binds it by name</>, where: "editor" },
       ],
     },
-    art: "/haunted/scenes/scene-5-video.jpg",
+    art: "/holiday/scenes/scene-5-video.jpg",
     label: "Video generation",
     color: COLORS.cyan,
     element: <VideoGen />,
@@ -128,7 +128,7 @@ export const STEPS: Step[] = [
         { text: "Run twice: the second night remembers the first", where: "verify" },
       ],
     },
-    art: "/haunted/scenes/scene-6-memory.jpg",
+    art: "/holiday/scenes/scene-6-memory.jpg",
     label: "Memory",
     color: COLORS.red,
     element: <MemoryPage />,
@@ -148,7 +148,7 @@ export const STEPS: Step[] = [
         { text: "Your video is on the wall, the poster as its thumbnail", where: "verify" },
       ],
     },
-    art: "/haunted/scenes/scene-7-publish.jpg",
+    art: "/holiday/scenes/scene-7-publish.jpg",
     label: "Deploy and publish",
     color: COLORS.green,
     element: <Release />,

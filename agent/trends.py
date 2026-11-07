@@ -2,7 +2,7 @@
 
 A trend is a FORMAT paired with a LOOK, never a subject: the creator's idea
 supplies the subject, and a trend is something that idea can ride, drawn in
-that look. The pool is fifty formats, each in five looks, a quarter of them the channel's own cozy low-poly Halloween look in its variants; every run draws a random ten, each with a
+that look. The pool is fifty formats, each in five looks, a quarter of them the channel's own cozy low-poly holiday look in its variants; every run draws a random ten, each with a
 heat score, hottest first. It lives beside the graph so scan_trends reads it
 wherever the graph runs: a stage app in adk web, the lab server, or the app
 on Cloud Run.
@@ -66,11 +66,11 @@ FORMATS = [
 # home look, cozy low-poly, in its variants; the rest ranges wide, so the
 # clips stop looking alike and the creator's pick decides the medium.
 LOWPOLY_LOOKS = [
-    "cozy low-poly Halloween, faceted jack-o'-lanterns, warm candlelight, pumpkin orange and cream",
-    "low-poly moonlit night, paper bats on strings, one candle, midnight plum shadows, slow dolly in",
-    "isometric low-poly diorama of a haunted room, the room as a tiny stage, top-down tilt",
-    "low-poly with felt and knit textures, a sheet ghost, stop-motion stutter, cozy handmade feel",
-    "low-poly candy-bright, bowls of candy corn, lavender and mint, gentle camera drift",
+    "cozy low-poly holiday evening, faceted string lights, warm candlelight, cranberry red and cream",
+    "low-poly snowy dusk, paper snowflakes on strings, one lantern, lavender shadows, slow dolly in",
+    "isometric low-poly diorama of a snowed-in room, the room as a tiny stage, top-down tilt",
+    "low-poly with felt and knit textures, a scarf and a sweater, stop-motion stutter, cozy handmade feel",
+    "low-poly cocoa-bright, mugs and marshmallows, pine green and gold, gentle camera drift",
 ]
 OTHER_LOOKS = [
     "claymation with visible thumbprints and a wobbly stop-motion rhythm",

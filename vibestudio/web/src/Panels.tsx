@@ -17,7 +17,7 @@ export function IdeaForm({ state, onError }: { state: RunState; onError: (m: str
   return (
     <label className="f">
       <div className="eyebrow">Tonight's idea</div>
-      <textarea className="txt" value={idea} onChange={(e) => setIdea(e.target.value)} placeholder="a tiny ghost learning to haunt a sock drawer" disabled={busy} />
+      <textarea className="txt" value={idea} onChange={(e) => setIdea(e.target.value)} placeholder="a tiny snowman learning to live in the freezer" disabled={busy} />
       <div className="row" style={{ marginTop: 8 }}>
         <button className="btn" onClick={kick} disabled={busy}>
           {busy ? "Running…" : state.status === "idle" ? "Kick off" : "Kick off another"}

@@ -46,6 +46,8 @@ vibestudio/runs/
 
 # generated media: never commit a render, a thumbnail, or an avatar
 *.mp4
+# ...except the six audience clips of the fixture: session 4 reads them
+!agent/audience/clip/*.mp4
 *.mov
 *.webm
 *.mkv

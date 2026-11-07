@@ -1,4 +1,4 @@
-/* The same design tokens as the workshop app, Haunted Edition: night (the
+/* The same design tokens as the workshop app, Holiday Special: night (the
    default theme, "dark") is a deep plum stage with lanterns; dusk (the
    "light" theme, on by default) is the cream, peach and lavender of the
    hero art. Toggled by `.light` on <html>. */
@@ -6,12 +6,12 @@
   --font-display: "Archivo", system-ui, sans-serif;
   --font-sans: "Google Sans", system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
-  --font-haunted: "Creepster", "Archivo", cursive;
+  --font-holiday: "Caveat Brush", "Archivo", cursive;
   --blue: #8fb0ff; --purple: #c4a8ff; --cyan: #8fe3d6; --amber: #ffb067; --green: #b9e4a0; --red: #ff7b93;
 
   --stage: #1c1630; --card: #262040; --card-hover: #2f2850; --input: #221c3a;
   --fg: #f6efe3; --fg-muted: #b6a9c9; --hairline: rgba(246, 239, 227, 0.1); --overlay: rgba(246, 239, 227, 0.05);
-  --fog: rgba(196, 168, 255, 0.16);
+  --fog: rgba(196, 168, 255, 0.16); --snow: rgba(255, 255, 255, 0.5);
   --aurora-opacity: 0.4; --aurora-blend: screen;
   color-scheme: dark;
 }
@@ -19,7 +19,7 @@
   --blue: #4f7bd9; --purple: #8b6fd6; --cyan: #1f8a7a; --amber: #e07a2f; --green: #3f8f4a; --red: #d64561;
   --stage: #f8f1ea; --card: #fffaf5; --card-hover: #f6ece4; --input: #fffdfa;
   --fg: #2b2238; --fg-muted: #7b6f8e; --hairline: rgba(43, 34, 56, 0.1); --overlay: rgba(43, 34, 56, 0.045);
-  --fog: rgba(239, 217, 230, 0.7);
+  --fog: rgba(255, 255, 255, 0.8); --snow: rgba(139, 111, 214, 0.3);
   --aurora-opacity: 0.2; --aurora-blend: multiply;
   color-scheme: light;
 }
@@ -46,13 +46,14 @@ button { font-family: inherit; }
 .ambience i.fog { border-radius: 0; filter: blur(18px); opacity: 1; mix-blend-mode: normal; left: -20vw; right: -20vw; bottom: -12vh; height: 46vh; width: auto;
   background: radial-gradient(60% 70% at 20% 80%, var(--fog) 0%, transparent 70%), radial-gradient(50% 60% at 70% 90%, var(--fog) 0%, transparent 70%), radial-gradient(40% 50% at 45% 100%, var(--fog) 0%, transparent 70%);
   animation: fog-drift 38s ease-in-out infinite; }
-.ambience i.bats { border-radius: 0; filter: none; opacity: 0.5; mix-blend-mode: normal; top: 9vh; left: -220px; width: 220px; height: 70px; background-repeat: no-repeat; background-size: contain;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 70'%3E%3Cg fill='%232b2238'%3E%3Cpath d='M20 30 l12 -8 l6 6 l8 -10 l8 10 l6 -6 l12 8 l-14 2 l-6 10 l-6 -8 l-6 8 l-6 -10z'/%3E%3Cpath d='M100 14 l9 -6 l5 5 l6 -8 l6 8 l5 -5 l9 6 l-10 2 l-5 8 l-5 -6 l-5 6 l-5 -8z'/%3E%3Cpath d='M160 44 l10 -7 l5 5 l7 -9 l7 9 l5 -5 l10 7 l-12 2 l-5 9 l-5 -7 l-5 7 l-5 -9z'/%3E%3C/g%3E%3C/svg%3E");
-  animation: bats-cross 52s linear infinite; }
-:root:not(.light) .ambience i.bats { filter: invert(1) brightness(0.8); opacity: 0.3; }
+/* five flakes to a 420px tile, falling one tile per loop so the loop has no seam */
+.ambience i.snow { border-radius: 0; filter: none; opacity: 1; mix-blend-mode: normal; inset: -420px 0 0 0; width: auto; height: auto;
+  background-image: radial-gradient(circle, var(--snow) 0 3px, transparent 3.5px), radial-gradient(circle, var(--snow) 0 2px, transparent 2.5px), radial-gradient(circle, var(--snow) 0 4px, transparent 4.5px), radial-gradient(circle, var(--snow) 0 2.5px, transparent 3px), radial-gradient(circle, var(--snow) 0 2px, transparent 2.5px);
+  background-size: 420px 420px; background-position: 40px 60px, 210px 150px, 330px 300px, 120px 360px, 280px 20px;
+  animation: snow-fall 46s linear infinite; }
 @keyframes fog-drift { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(6vw, -2vh, 0); } }
-@keyframes bats-cross { 0% { transform: translate3d(0, 0, 0) scale(0.8); } 24% { transform: translate3d(56vw, 2vh, 0) scale(1); } 48% { transform: translate3d(120vw, 1vh, 0) scale(1.1); } 48.01%, 100% { transform: translate3d(-10vw, 0, 0) scale(0.8); } }
-@media (prefers-reduced-motion: reduce) { .ambience i.fog, .ambience i.bats { animation: none; } .ambience i.bats { display: none; } }
+@keyframes snow-fall { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(0, 420px, 0); } }
+@media (prefers-reduced-motion: reduce) { .ambience i.fog, .ambience i.snow { animation: none; } }
 @keyframes drift-a { 0%, 100% { transform: translate3d(0, 0, 0) scale(1); } 50% { transform: translate3d(8vw, 6vh, 0) scale(1.12); } }
 @keyframes drift-b { 0%, 100% { transform: translate3d(0, 0, 0) scale(1); } 50% { transform: translate3d(-10vw, 8vh, 0) scale(1.15); } }
 
@@ -60,7 +61,7 @@ button { font-family: inherit; }
 .bar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 22px; border-bottom: 1px solid var(--hairline); background: color-mix(in srgb, var(--stage) 78%, transparent); backdrop-filter: blur(12px); }
 .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 900; font-size: 19px; letter-spacing: -0.02em; }
 .brand img { height: 40px; width: auto; display: block; }
-.brand .tag { font: 400 18px var(--font-haunted); color: var(--amber); letter-spacing: 0.04em; }
+.brand .tag { font: 400 20px var(--font-holiday); color: var(--green); letter-spacing: 0.01em; }
 .tabs { display: flex; gap: 4px; border: 1px solid var(--hairline); border-radius: 999px; padding: 3px; background: var(--overlay); }
 .tabs button { border: 0; background: transparent; color: var(--fg-muted); border-radius: 999px; padding: 7px 18px; font: 600 15px var(--font-sans); cursor: pointer; }
 .tabs button.on { background: var(--card); color: var(--fg); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2); }

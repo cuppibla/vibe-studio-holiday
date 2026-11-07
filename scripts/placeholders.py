@@ -2,10 +2,10 @@
 seeded with, and the poster the image model's stand-in returns when
 STUDIO_REAL_IMAGES=0 or no model is reachable.
 
-    python scripts/placeholders.py            # writes agent/media/past/*.png and img/haunted/poster-standin.png
+    python scripts/placeholders.py            # writes agent/media/past/*.png and img/holiday/poster-standin.png
 
 They are flat pastel compositions in the lab's dusk palette, no text. The
-real posters come from scripts/gen_halloween_art.py (Nano Banana); this
+real posters were drawn with Nano Banana outside this repository; this
 script exists so the lab runs, the corpus loads and the verify rows pass
 without a single image call.
 """
@@ -19,11 +19,11 @@ from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PAST = ROOT / "agent" / "media" / "past"
-STANDIN = ROOT / "img" / "haunted" / "poster-standin.png"
+STANDIN = ROOT / "img" / "holiday" / "poster-standin.png"
 W, H = 1080, 1920
 
 CREAM, PEACH, LAVENDER = (251, 243, 234), (246, 227, 214), (239, 217, 230)
-PUMPKIN, MINT, BUTTER, LILAC, PLUM = (255, 164, 92), (185, 228, 201), (255, 210, 122), (185, 163, 232), (74, 67, 86)
+CRANBERRY, MINT, BUTTER, LILAC, PLUM = (214, 92, 100), (185, 228, 201), (255, 210, 122), (185, 163, 232), (74, 67, 86)
 
 POSTERS = {
     "sock-dragon": dict(seed=1, ground=(230, 205, 190), subject="dragon"),
@@ -83,7 +83,7 @@ def subject(draw, kind, seed):
         blob(draw, cx, cy - 20, 150, MINT, n=10, squash=0.8, seed=1)                           # the dragon, asleep
         blob(draw, cx + 150, cy - 70, 70, MINT, n=8, seed=2)
         for i in range(5):
-            blob(draw, 330 + i * 110, 1300, 40, [PUMPKIN, BUTTER, LILAC][i % 3], n=7, squash=0.7, seed=i)
+            blob(draw, 330 + i * 110, 1300, 40, [CRANBERRY, BUTTER, LILAC][i % 3], n=7, squash=0.7, seed=i)
     elif kind == "fridge":
         facet(draw, [(360, 760), (720, 760), (720, 1500), (360, 1500)], (236, 238, 245))        # the fridge
         facet(draw, [(720, 760), (860, 700), (860, 1440), (720, 1500)], (210, 212, 226))
@@ -93,12 +93,12 @@ def subject(draw, kind, seed):
         blob(draw, 470, 1200, 60, (245, 240, 250), n=8, seed=4)
     elif kind == "toys":
         facet(draw, [(200, 1240), (880, 1240), (920, 1400), (160, 1400)], (190, 150, 120))      # the desk
-        for i, c in enumerate([PUMPKIN, LILAC, MINT, BUTTER, PUMPKIN]):
+        for i, c in enumerate([CRANBERRY, LILAC, MINT, BUTTER, CRANBERRY]):
             blob(draw, 300 + i * 120, 1180 - (i % 2) * 20, 55 + (i == 0) * 25, c, n=8, seed=i)
         blob(draw, 300, 1040, 60, BUTTER, n=12, seed=9)                                          # the lamp's glow
     elif kind == "cat":
         facet(draw, [(140, 1240), (940, 1240), (980, 1360), (100, 1360)], (240, 236, 228))      # the counter
-        for i, c in enumerate([LILAC, PUMPKIN, MINT, (200, 200, 210)]):
+        for i, c in enumerate([LILAC, CRANBERRY, MINT, (200, 200, 210)]):
             facet(draw, [(220 + i * 170, 1120), (340 + i * 170, 1120), (340 + i * 170, 1240), (220 + i * 170, 1240)], c)
         blob(draw, 560, 980, 110, (120, 110, 130), n=10, squash=0.9, seed=5)                    # the cat
         blob(draw, 560, 860, 75, (120, 110, 130), n=9, seed=6)
@@ -115,8 +115,8 @@ def subject(draw, kind, seed):
     elif kind == "snail":
         facet(draw, [(100, 1360), (980, 1360), (1080, 1700), (0, 1700)], (235, 210, 190))      # the hallway
         for i in range(4):
-            blob(draw, 160 + i * 250, 700 + (i % 2) * 40, 60, [PUMPKIN, MINT][i % 2], n=8, seed=i)   # lanterns
-        blob(draw, 420, 1480, 100, PUMPKIN, n=10, seed=8)                                        # the snail's shell
+            blob(draw, 160 + i * 250, 700 + (i % 2) * 40, 60, [CRANBERRY, MINT][i % 2], n=8, seed=i)   # lanterns
+        blob(draw, 420, 1480, 100, CRANBERRY, n=10, seed=8)                                        # the snail's shell
         blob(draw, 320, 1520, 60, MINT, n=8, squash=0.6, seed=9)
         facet(draw, [(600, 1440), (800, 1440), (820, 1540), (580, 1540)], (200, 200, 215))      # the vacuum
 
@@ -128,7 +128,7 @@ def poster(name: str, spec: dict) -> Image.Image:
     clouds(d, spec["seed"])
     tile(d, spec["ground"])
     subject(d, spec["subject"], spec["seed"])
-    # a soft pumpkin glow in one corner, the season's signature
+    # a soft candle glow in one corner, the season's signature
     glow = Image.new("RGB", (W, H), (0, 0, 0))
     gd = ImageDraw.Draw(glow)
     gd.ellipse([W - 500, H - 700, W + 200, H], fill=(70, 40, 10))
@@ -147,7 +147,7 @@ def standin() -> Image.Image:
     sky(d)
     clouds(d, 42)
     tile(d, (226, 205, 215))
-    blob(d, W // 2, 1150, 190, PUMPKIN, n=12, squash=0.8, seed=11)     # a pumpkin, the stand-in's subject
+    blob(d, W // 2, 1150, 190, CRANBERRY, n=12, squash=0.8, seed=11)     # a round ornament, the stand-in's subject
     facet(d, [(W // 2 - 18, 960), (W // 2 + 18, 960), (W // 2 + 10, 900), (W // 2 - 10, 900)], (120, 150, 90))
     for sx in (-70, 70):
         facet(d, [(W // 2 + sx - 35, 1140), (W // 2 + sx + 35, 1140), (W // 2 + sx, 1080)], BUTTER)

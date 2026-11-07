@@ -25,7 +25,7 @@
   --color-hairline: var(--hairline);
   --color-overlay: var(--overlay);
 
-  --font-haunted: "Creepster", "Archivo", cursive;
+  --font-holiday: "Caveat Brush", "Archivo", cursive;
 
   --animate-fade-in: fade-in 0.25s ease-out;
   --animate-rise: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
@@ -95,13 +95,13 @@
   color-scheme: light;
 }
 
-/* ── The Haunted Edition skin ────────────────────────────────────────────
-   main.tsx sets data-skin="haunted" on <html>. Two moods: night (the default
+/* ── The Holiday Special skin ────────────────────────────────────────────
+   main.tsx sets data-skin="holiday" on <html>. Two moods: night (the default
    theme, "dark") is a deep plum stage with lanterns; dusk (the "light" theme,
    on by default for this skin) is the cream, peach and lavender of the hero
    art. The accents are the same six hues as the base theme, re-mixed for
    each mood, so every component keeps working unchanged. */
-:root[data-skin="haunted"] {
+:root[data-skin="holiday"] {
   --vibe-blue: #8fb0ff;
   --vibe-purple: #c4a8ff;
   --vibe-cyan: #8fe3d6;
@@ -118,13 +118,14 @@
   --overlay: rgba(246, 239, 227, 0.05);
   --spotlight: rgba(255, 176, 103, 0.12);
   --fog: rgba(196, 168, 255, 0.16);
+  --snow: rgba(255, 255, 255, 0.5);
   --aurora-opacity: 0.42;
   --aurora-blend: screen;
   --grain-opacity: 0.03;
   --grid-opacity: 0.04;
   color-scheme: dark;
 }
-:root[data-skin="haunted"].light {
+:root[data-skin="holiday"].light {
   --vibe-blue: #4f7bd9;
   --vibe-purple: #8b6fd6;
   --vibe-cyan: #1f8a7a;
@@ -140,28 +141,29 @@
   --hairline: rgba(43, 34, 56, 0.1);
   --overlay: rgba(43, 34, 56, 0.045);
   --spotlight: rgba(224, 122, 47, 0.09);
-  --fog: rgba(239, 217, 230, 0.7);
+  --fog: rgba(255, 255, 255, 0.8);
+  --snow: rgba(139, 111, 214, 0.3);
   --aurora-opacity: 0.2;
   --aurora-blend: multiply;
   --grain-opacity: 0.014;
   --grid-opacity: 0.03;
   color-scheme: light;
 }
-:root[data-skin="haunted"] .ambience__blob--blue { background: radial-gradient(circle, var(--color-vibe-amber) 0%, transparent 68%); }
-:root[data-skin="haunted"] .ambience__blob--cyan { background: radial-gradient(circle, var(--color-vibe-red) 0%, transparent 70%); }
-:root[data-skin="haunted"] .holo-text {
+:root[data-skin="holiday"] .ambience__blob--blue { background: radial-gradient(circle, var(--color-vibe-amber) 0%, transparent 68%); }
+:root[data-skin="holiday"] .ambience__blob--cyan { background: radial-gradient(circle, var(--color-vibe-red) 0%, transparent 70%); }
+:root[data-skin="holiday"] .holo-text {
   background-image: linear-gradient(100deg,
     var(--color-vibe-amber) 0%, var(--color-vibe-red) 30%, var(--color-vibe-purple) 50%,
     var(--color-vibe-red) 70%, var(--color-vibe-amber) 100%);
 }
-:root[data-skin="haunted"].light .stage-vignette::before {
+:root[data-skin="holiday"].light .stage-vignette::before {
   background: radial-gradient(110% 70% at 50% 0%, var(--spotlight) 0%, transparent 60%);
 }
-.font-haunted { font-family: var(--font-haunted); font-weight: 400; letter-spacing: 0.04em; }
+.font-holiday { font-family: var(--font-holiday); font-weight: 400; letter-spacing: 0.01em; }
 
-/* fog along the bottom and a few bats drifting across: haunted skin only */
-.ambience__fog, .ambience__bats { display: none; }
-:root[data-skin="haunted"] .ambience__fog, :root[data-skin="haunted"] .ambience__bats { display: block; }
+/* a soft snow haze along the bottom and a few snowflakes drifting down: holiday skin only */
+.ambience__fog, .ambience__snow { display: none; }
+:root[data-skin="holiday"] .ambience__fog, :root[data-skin="holiday"] .ambience__snow { display: block; }
 .ambience__fog {
   position: absolute; left: -20vw; right: -20vw; bottom: -12vh; height: 46vh; pointer-events: none;
   background:
@@ -175,28 +177,29 @@
   0%, 100% { transform: translate3d(0, 0, 0); }
   50% { transform: translate3d(6vw, -2vh, 0); }
 }
-.ambience__bats {
-  position: absolute; top: 9vh; left: -220px; width: 220px; height: 70px; opacity: 0.55; pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 70'%3E%3Cg fill='%232b2238'%3E%3Cpath d='M20 30 l12 -8 l6 6 l8 -10 l8 10 l6 -6 l12 8 l-14 2 l-6 10 l-6 -8 l-6 8 l-6 -10z'/%3E%3Cpath d='M100 14 l9 -6 l5 5 l6 -8 l6 8 l5 -5 l9 6 l-10 2 l-5 8 l-5 -6 l-5 6 l-5 -8z'/%3E%3Cpath d='M160 44 l10 -7 l5 5 l7 -9 l7 9 l5 -5 l10 7 l-12 2 l-5 9 l-5 -7 l-5 7 l-5 -9z'/%3E%3C/g%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-size: contain;
-  animation: bats-cross 52s linear infinite;
+/* five flakes to a 420px tile, falling one tile per loop so the loop has no seam */
+.ambience__snow {
+  position: absolute; inset: -420px 0 0 0; pointer-events: none;
+  background-image:
+    radial-gradient(circle, var(--snow) 0 3px, transparent 3.5px),
+    radial-gradient(circle, var(--snow) 0 2px, transparent 2.5px),
+    radial-gradient(circle, var(--snow) 0 4px, transparent 4.5px),
+    radial-gradient(circle, var(--snow) 0 2.5px, transparent 3px),
+    radial-gradient(circle, var(--snow) 0 2px, transparent 2.5px);
+  background-size: 420px 420px;
+  background-position: 40px 60px, 210px 150px, 330px 300px, 120px 360px, 280px 20px;
+  animation: snow-fall 46s linear infinite;
 }
-:root[data-skin="haunted"]:not(.light) .ambience__bats { filter: invert(1) brightness(0.8); opacity: 0.35; }
-@keyframes bats-cross {
-  0% { transform: translate3d(0, 0, 0) scale(0.8); }
-  12% { transform: translate3d(28vw, -3vh, 0) scale(0.9); }
-  24% { transform: translate3d(56vw, 2vh, 0) scale(1); }
-  36% { transform: translate3d(84vw, -2vh, 0) scale(1.05); }
-  48% { transform: translate3d(120vw, 1vh, 0) scale(1.1); }
-  48.01%, 100% { transform: translate3d(-10vw, 0, 0) scale(0.8); }
+@keyframes snow-fall {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, 420px, 0); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ambience__fog, .ambience__bats { animation: none !important; }
-  .ambience__bats { display: none !important; }
+  .ambience__fog, .ambience__snow { animation: none !important; }
 }
 
 /* the hero beside a page title, and the vertical posters the verify rows show */
-.haunted-art img { box-shadow: 0 24px 60px -30px rgba(43, 34, 56, 0.45); }
+.holiday-art img { box-shadow: 0 24px 60px -30px rgba(43, 34, 56, 0.45); }
 .poster-9x16 { aspect-ratio: 9 / 16; }
 
 html, body, #root { height: 100%; }

@@ -27,12 +27,12 @@ export function TopNav({ activeSlug }: { activeSlug: string }) {
     <nav className="sticky top-0 z-50 border-b border-hairline bg-card/40 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:px-8">
         <Link to={`/step/${STEPS[0].slug}`} className="flex items-center gap-2" aria-label="Vibe Studio home">
-          <img src="/haunted/mark.svg" alt="" className="h-7 w-7" />
+          <img src="/holiday/mark.svg" alt="" className="h-7 w-7" />
           <span className="font-display text-xl tracking-tight">
             Vibe<span className="holo-text">Studio</span>
           </span>
-          <span className="font-haunted text-lg leading-none" style={{ color: "var(--vibe-amber)" }}>
-            Haunted Edition
+          <span className="font-holiday text-xl leading-none" style={{ color: "var(--vibe-green)" }}>
+            Holiday Special
           </span>
           <span className="hidden font-mono text-[10px] uppercase tracking-widest text-fg-muted md:inline">
             · Agentic Workflow with ADK

@@ -38,8 +38,8 @@ root_agent = Agent(
     name="solo_channel", model=config.MODEL,
     tools=[check_trends, read_backlog, make_poster],
     instruction=(
-        "You run the creator's cozy-spooky short-video channel, alone, every "
-        "night until Halloween.\n"
+        "You run the creator's cozy holiday short-video channel, alone, every "
+        "night until New Year's Eve.\n"
         "When the creator gives you an idea (or nothing), do ALL of this:\n"
         "check what is trending. look at your backlog of ideas. propose a "
         "direction and agree on it with the creator. refuse blacklisted "

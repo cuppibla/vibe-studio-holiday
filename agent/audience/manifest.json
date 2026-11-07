@@ -2,157 +2,157 @@
  "comments": {
   "file": "agent/comments.md",
   "count": 12,
-  "how": "written for the six Halloween videos"
+  "how": "written for the six holiday videos"
  },
  "voice": [
   {
    "file": "voice/note-01.mp3",
    "voice": "Kore",
-   "text": "The sock ghost one made my kid laugh so hard. Please do more small magic in small rooms.",
+   "text": "The freezer snowman one made my kid laugh so hard. Please do more small magic in small rooms.",
    "how": "Gemini TTS (gemini-2.5-flash-preview-tts)"
   },
   {
    "file": "voice/note-02.mp3",
    "voice": "Puck",
-   "text": "Candy heist was perfect, but it was way too dark at the start. I couldn't see the raccoon.",
+   "text": "Gravy heist was perfect, but it was way too dark at the start. I couldn't see the mouse.",
    "how": "Gemini TTS (gemini-2.5-flash-preview-tts)"
   },
   {
    "file": "voice/note-03.mp3",
    "voice": "Zephyr",
-   "text": "I want a whole series of the cat judging costumes. The slow blink at the pumpkin costume. Chef's kiss.",
+   "text": "I want a whole series of the cat judging sweaters. The slow blink at the snowflake sweater. Chef's kiss.",
    "how": "Gemini TTS (gemini-2.5-flash-preview-tts)"
   },
   {
    "file": "voice/note-04.mp3",
    "voice": "Charon",
-   "text": "Pumpkin robot felt like an ad for the carving kit. Less product, more robot being bad at it.",
+   "text": "The gift robot felt like an ad for the wrapping paper. Less product, more robot being bad at it.",
    "how": "Gemini TTS (gemini-2.5-flash-preview-tts)"
   },
   {
    "file": "voice/note-05.mp3",
    "voice": "Fenrir",
-   "text": "The bat in the lamp was so cozy. Can you do one where it moves into the fridge light next?",
+   "text": "The robin in the lights was so cozy. Can you do one where it moves into the fridge light next?",
    "how": "Gemini TTS (gemini-2.5-flash-preview-tts)"
   },
   {
    "file": "voice/note-06.mp3",
    "voice": "Aoede",
-   "text": "Skeleton sweater made me tear up. The ending where it finally gets warm. More endings like that.",
+   "text": "Scarecrow sweater made me tear up. The ending where it finally gets warm. More endings like that.",
    "how": "Gemini TTS (gemini-2.5-flash-preview-tts)"
   },
   {
    "file": "voice/note-07.mp3",
    "voice": "Leda",
-   "text": "The captions covered the ghost's face for the whole second half. Move the text, or drop it.",
+   "text": "The captions covered the snowman's face for the whole second half. Move the text, or drop it.",
    "how": "Gemini TTS (gemini-2.5-flash-preview-tts)"
   },
   {
    "file": "voice/note-08.mp3",
    "voice": "Orus",
-   "text": "Idea for you: the doorbell that only rings for ghosts. Filmed like a security camera.",
+   "text": "Idea for you: the doorbell that only rings for snowmen. Filmed like a security camera.",
    "how": "Gemini TTS (gemini-2.5-flash-preview-tts)"
   }
  ],
  "photo": [
   {
-   "file": "photo/photo-01-ghost-drawer.jpg",
+   "file": "photo/photo-01-freezer-snowman.jpg",
    "how": "Nano Banana, the channel's low-poly look, a viewer's point of view"
   },
   {
-   "file": "photo/photo-02-costume-cat.jpg",
+   "file": "photo/photo-02-sweater-cat.jpg",
    "how": "Nano Banana, the channel's low-poly look, a viewer's point of view"
   },
   {
-   "file": "photo/photo-03-desk-pumpkin.jpg",
+   "file": "photo/photo-03-desk-lights.jpg",
    "how": "Nano Banana, the channel's low-poly look, a viewer's point of view"
   },
   {
-   "file": "photo/photo-04-candy-heist.jpg",
+   "file": "photo/photo-04-gravy-heist.jpg",
    "how": "Nano Banana, the channel's low-poly look, a viewer's point of view"
   },
   {
-   "file": "photo/photo-05-porch-bucket.jpg",
+   "file": "photo/photo-05-porch-lantern.jpg",
    "how": "Nano Banana, the channel's low-poly look, a viewer's point of view"
   },
   {
-   "file": "photo/photo-06-ghost-sheet-kid.jpg",
+   "file": "photo/photo-06-blanket-fort-kid.jpg",
    "how": "Nano Banana, the channel's low-poly look, a viewer's point of view"
   },
   {
-   "file": "photo/photo-07-bat-lamp.jpg",
+   "file": "photo/photo-07-robin-lights.jpg",
    "how": "Nano Banana, the channel's low-poly look, a viewer's point of view"
   },
   {
-   "file": "photo/photo-08-pumpkin-carving.jpg",
+   "file": "photo/photo-08-burnt-pie.jpg",
    "how": "Nano Banana, the channel's low-poly look, a viewer's point of view"
   },
   {
-   "file": "photo/photo-09-haunted-plant.jpg",
+   "file": "photo/photo-09-decorated-plant.jpg",
    "how": "Nano Banana, the channel's low-poly look, a viewer's point of view"
   },
   {
-   "file": "photo/photo-10-skeleton-closet.jpg",
+   "file": "photo/photo-10-scarecrow-sweater.jpg",
    "how": "Nano Banana, the channel's low-poly look, a viewer's point of view"
   },
   {
-   "file": "photo/photo-11-fridge-midnight.jpg",
+   "file": "photo/photo-11-fridge-leftovers.jpg",
    "how": "Nano Banana, the channel's low-poly look, a viewer's point of view"
   },
   {
-   "file": "photo/photo-12-desk-toys-party.jpg",
+   "file": "photo/photo-12-desk-toys-countdown.jpg",
    "how": "Nano Banana, the channel's low-poly look, a viewer's point of view"
   },
   {
-   "file": "photo/photo-13-snail-ghost.jpg",
+   "file": "photo/photo-13-snail-scarf.jpg",
    "how": "Nano Banana, the channel's low-poly look, a viewer's point of view"
   },
   {
-   "file": "photo/photo-14-doorbell-ghost.jpg",
+   "file": "photo/photo-14-doorbell-snowman.jpg",
    "how": "Nano Banana, the channel's low-poly look, a viewer's point of view"
   }
  ],
  "clip": [
   {
    "file": "clip/clip-01.mp4",
-   "over": "photo/photo-01-ghost-drawer.jpg",
+   "over": "photo/photo-01-freezer-snowman.jpg",
    "voice": "Kore",
-   "text": "Look, I set up my own sock drawer like the video. The ghost is a paper cup.",
+   "text": "Look, I set up my own freezer like the video. The snowman is a marshmallow.",
    "how": "ffmpeg: a slow push-in over the photo, the voice over it"
   },
   {
    "file": "clip/clip-02.mp4",
-   "over": "photo/photo-05-porch-bucket.jpg",
+   "over": "photo/photo-05-porch-lantern.jpg",
    "voice": "Puck",
-   "text": "Our porch tonight. The bucket is already half empty, and it's only seven.",
+   "text": "Our porch tonight. First snow, and the parcel got here before we did.",
    "how": "ffmpeg: a slow push-in over the photo, the voice over it"
   },
   {
    "file": "clip/clip-03.mp4",
-   "over": "photo/photo-08-pumpkin-carving.jpg",
+   "over": "photo/photo-08-burnt-pie.jpg",
    "voice": "Zephyr",
-   "text": "Carving night. My cat is supervising. She does not approve of the face.",
+   "text": "Pie night. My cat is supervising. She does not approve of the crust.",
    "how": "ffmpeg: a slow push-in over the photo, the voice over it"
   },
   {
    "file": "clip/clip-04.mp4",
-   "over": "photo/photo-11-fridge-midnight.jpg",
+   "over": "photo/photo-11-fridge-leftovers.jpg",
    "voice": "Charon",
-   "text": "Midnight fridge check. Something moved the candy bowl to the top shelf. Not me.",
+   "text": "Midnight fridge check. Something moved the gravy boat to the top shelf. Not me.",
    "how": "ffmpeg: a slow push-in over the photo, the voice over it"
   },
   {
    "file": "clip/clip-05.mp4",
-   "over": "photo/photo-13-snail-ghost.jpg",
+   "over": "photo/photo-13-snail-scarf.jpg",
    "voice": "Fenrir",
    "text": "The snail won. The vacuum gave up at the rug. Best three minutes of my week.",
    "how": "ffmpeg: a slow push-in over the photo, the voice over it"
   },
   {
    "file": "clip/clip-06.mp4",
-   "over": "photo/photo-14-doorbell-ghost.jpg",
+   "over": "photo/photo-14-doorbell-snowman.jpg",
    "voice": "Aoede",
-   "text": "Our doorbell rang twice tonight, and nobody was there. I love it.",
+   "text": "Our doorbell rang twice tonight, and nobody was there. Just a snowman. I love it.",
    "how": "ffmpeg: a slow push-in over the photo, the voice over it"
   }
  ]

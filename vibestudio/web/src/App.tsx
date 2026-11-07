@@ -18,7 +18,7 @@ function useTheme() {
     } catch {
       /* no storage */
     }
-    return "light";   // the Haunted Edition opens at dusk, the hero art's mood
+    return "light";   // the Holiday Special opens at dusk, the hero art's mood
   });
   useEffect(() => {
     document.documentElement.classList.toggle("light", theme === "light");
@@ -109,13 +109,13 @@ export function App() {
         <i className="a" />
         <i className="b" />
         <i className="fog" />
-        <i className="bats" />
+        <i className="snow" />
       </div>
       <div className="frame">
         <header className="bar">
           <div className="row" style={{ gap: 18 }}>
             <div className="brand">
-              <img src={theme === "dark" ? "/logo-dark.svg" : "/logo.svg"} alt="VibeStudio, Haunted Edition" />
+              <img src={theme === "dark" ? "/logo-dark.svg" : "/logo.svg"} alt="VibeStudio, Holiday Special" />
             </div>
             <div className="tabs" role="tablist">
               <button role="tab" aria-selected={tab === "studio"} className={tab === "studio" ? "on" : ""} onClick={() => setTab("studio")}>

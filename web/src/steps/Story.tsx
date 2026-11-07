@@ -149,7 +149,7 @@ function ArcFigure() {
 }
 
 const CHORES = [
-  "research what is haunting the feed",
+  "research what is trending on the feed",
   "comb through the backlog of ideas",
   "choose tonight's direction",
   "check it against the channel's policy",
@@ -182,9 +182,9 @@ export function Story() {
       <StepHeader
         kicker="Session 1 · The story"
         color={COLORS.cyan}
-        title="You run a cozy-spooky channel on VibeTube."
-        blurb="One short every night until Halloween. An audience that wants small magic in small rooms, a backlog of ideas, and a pipeline that eats your evenings. This lab turns that pipeline into an ADK Workflow that runs itself, asks you only where your judgment is needed, and ends every run with a clip and its poster."
-        art={<img src="/haunted/hero.jpg" alt="The haunted studio: a low-poly robot at a desk, a pumpkin lamp, a ghost over its shoulder, bats at the window" className="w-full rounded-3xl border border-hairline bg-card" />}
+        title="You run a cozy holiday channel on VibeTube."
+        blurb="One short every night until New Year's Eve. An audience that wants small magic in small rooms, a backlog of ideas, and a pipeline that eats your evenings. This lab turns that pipeline into an ADK Workflow that runs itself, asks you only where your judgment is needed, and ends every run with a clip and its poster."
+        art={<img src="/holiday/hero.jpg" alt="The holiday studio in the snow: a low-poly fox at an easel, a cat on the desk, an owl on a film projector and a small dragon at a laptop, under a string of lights" className="w-full rounded-3xl border border-hairline bg-card" />}
       />
 
       {/* The work, as a wall of chores */}
