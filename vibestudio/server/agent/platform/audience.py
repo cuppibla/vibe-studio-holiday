@@ -22,7 +22,9 @@ As shipped only the comments are read; the other three sit behind one "# ".
 """
 from __future__ import annotations
 
+import os
 import pathlib
+import time
 
 from . import config, images
 
@@ -38,6 +40,12 @@ CLIP_PROMPT = ("Describe the shots in two sentences, then quote what you HEAR on
                "Plain text on one line, no headings, no markdown.")
 
 
+REAL = os.environ.get("STUDIO_REAL_READERS", "1").lower() in ("1", "true")   # 0: every line from prebaked.md, no model calls
+PREBAKED = AUDIENCE / "prebaked.md"           # what the readers would say, for a file the model cannot be asked about
+PACE = float(os.environ.get("STUDIO_READER_PACE", "2"))     # seconds between calls: a new project's per-minute quota is small
+BACKOFF = (15, 30, 60)                        # waits after a 429 before the same file is tried again
+
+
 def _ask(path: pathlib.Path, mime: str, prompt: str) -> str:
     """One media file in, one line of text out."""
     from google.genai import types as gt
@@ -47,6 +55,55 @@ def _ask(path: pathlib.Path, mime: str, prompt: str) -> str:
         contents=[gt.Part.from_bytes(data=path.read_bytes(), mime_type=mime), prompt],
         config=gt.GenerateContentConfig(automatic_function_calling=gt.AutomaticFunctionCallingConfig(disable=True)))
     return " ".join((resp.text or "").split())
+
+
+def _is_quota(e: Exception) -> bool:
+    s = f"{type(e).__name__} {e}"
+    return "429" in s or "RESOURCE_EXHAUSTED" in s
+
+
+def _read(kind: str, path: pathlib.Path, mime: str, prompt: str, verb: str, done: dict[str, str]) -> str:
+    """The line for one file. In order: what a previous run already wrote for it
+    (a re-run never asks twice), then Gemini, paced, with three waits on a 429,
+    then the prebaked line, so the ingest always ends with every file read."""
+    if path.name in done:
+        print(f"  {verb} {path.name}: already read; kept")
+        return done[path.name]
+    baked = _prebaked().get(path.name, "")
+    if not REAL:
+        print(f"  {verb} {path.name}: prebaked (STUDIO_REAL_READERS=0)")
+        return baked
+    for i, wait in enumerate((*BACKOFF, None)):
+        try:
+            said = _ask(path, mime, prompt)
+            time.sleep(PACE)
+            print(f"  {verb} {path.name}: {said[:90]}")
+            return said
+        except Exception as e:  # noqa: BLE001 - whatever the model raised, the ingest goes on
+            if not _is_quota(e) or wait is None:
+                why = "429 RESOURCE_EXHAUSTED after three waits" if wait is None else f"{type(e).__name__}: {str(e)[:80]}"
+                if baked:
+                    print(f"  {verb} {path.name}: prebaked ({why})")
+                    return baked
+                raise
+            print(f"  {verb} {path.name}: 429 RESOURCE_EXHAUSTED, waiting {wait}s before trying it again ({i + 1}/{len(BACKOFF)})")
+            time.sleep(wait)
+    return baked
+
+
+def _prebaked() -> dict[str, str]:
+    """prebaked.md, keyed by file name across all kinds."""
+    out: dict[str, str] = {}
+    try:
+        text = PREBAKED.read_text()
+    except OSError:
+        return out
+    for l in text.splitlines():
+        if l.startswith("- ") and ": " in l and " — " in l:
+            body = l[2:].split(": ", 1)[1]
+            name, _, said = body.partition(" — ")
+            out[name.strip()] = said.strip()
+    return out
 
 
 def _write(out: pathlib.Path, kind: str, title: str, lines: list[str]) -> pathlib.Path:
@@ -66,34 +123,34 @@ def read_comments() -> pathlib.Path:
 def transcribe_voice() -> pathlib.Path:
     """voice note -> text: Gemini listens."""
     files = sorted((AUDIENCE / "voice").glob("*.mp3"))
-    lines = []
+    out = AUDIENCE / "voice" / "transcripts.md"
+    done, lines = lines_of('voice'), []            # what an earlier run wrote, before this one rewrites the file
     for p in files:
-        said = _ask(p, "audio/mpeg", VOICE_PROMPT)
-        lines.append(f"- voice: {p.name} — {said}")
-        print(f"  heard {p.name}: {said[:90]}")
-    return _write(AUDIENCE / "voice" / "transcripts.md", "voice", "What Gemini heard in the audience's voice notes", lines)
+        lines.append(f"- voice: {p.name} — {_read('voice', p, 'audio/mpeg', VOICE_PROMPT, 'heard', done)}")
+        _write(out, "voice", "What Gemini heard in the audience's voice notes", lines)   # written as it goes: a stop keeps what was read
+    return out
 
 
 def caption_photos() -> pathlib.Path:
     """photo -> text: Gemini looks, the posters' prompt shape."""
     files = sorted((AUDIENCE / "photo").glob("*.jpg"))
-    lines = []
+    out = AUDIENCE / "photo" / "captions.md"
+    done, lines = lines_of('photo'), []            # what an earlier run wrote, before this one rewrites the file
     for p in files:
-        seen = _ask(p, "image/jpeg", PHOTO_PROMPT)
-        lines.append(f"- photo: {p.name} — {seen}")
-        print(f"  saw {p.name}: {seen[:90]}")
-    return _write(AUDIENCE / "photo" / "captions.md", "photo", "What Gemini saw in the audience's photos", lines)
+        lines.append(f"- photo: {p.name} — {_read('photo', p, 'image/jpeg', PHOTO_PROMPT, 'saw', done)}")
+        _write(out, "photo", "What Gemini saw in the audience's photos", lines)
+    return out
 
 
 def watch_clips() -> pathlib.Path:
     """clip -> text: Gemini watches the picture AND hears the soundtrack."""
     files = sorted((AUDIENCE / "clip").glob("*.mp4"))
-    lines = []
+    out = AUDIENCE / "clip" / "notes.md"
+    done, lines = lines_of('clip'), []            # what an earlier run wrote, before this one rewrites the file
     for p in files:
-        seen = _ask(p, "video/mp4", CLIP_PROMPT)
-        lines.append(f"- clip: {p.name} — {seen}")
-        print(f"  watched {p.name}: {seen[:90]}")
-    return _write(AUDIENCE / "clip" / "notes.md", "clip", "What Gemini saw and heard in the audience's clips", lines)
+        lines.append(f"- clip: {p.name} — {_read('clip', p, 'video/mp4', CLIP_PROMPT, 'watched', done)}")
+        _write(out, "clip", "What Gemini saw and heard in the audience's clips", lines)
+    return out
 
 
 READERS = [
@@ -140,3 +197,6 @@ def items() -> list[dict]:
             if p.suffix.lower() in exts:
                 out.append({"kind": kind, "file": p.name, "url": f"{WEB}/{folder}/{p.name}", "mime": mime, "line": said.get(p.name, "")})
     return out
+
+
+lines_of = lines                             # the readers' name for it: their own `lines` is the list they write
