@@ -52,8 +52,8 @@ export const STEPS: Step[] = [
       one: "An ADK Agent is a model, an instruction and tools. Its third tool calls the image model.",
       does: [
         { text: <>Edit <code>make_poster</code>: one call to the image model</>, where: "editor" },
-        { text: "Send two lines in adk web", where: "run" },
-        { text: "A poster lands. Six checks go green.", where: "verify" },
+        { text: "Send one line in adk web", where: "run" },
+        { text: "A poster lands in the first reply. Six checks go green.", where: "verify" },
       ],
     },
   },
@@ -141,9 +141,9 @@ export const STEPS: Step[] = [
     slug: "release", dense: true,
     header: {
       title: "The night, on VibeTube.",
-      one: "VibeStudio runs the finished graph with a Runner and streams it to a page; deploy it to Cloud Run and publish the clip with its poster as the thumbnail.",
+      one: "VibeStudio runs the finished graph with a Runner and streams it to a page; setup put it on Cloud Run while you read. Open it, run a night, and publish the clip with its poster as the thumbnail.",
       does: [
-        { text: "Deploy VibeStudio to Cloud Run", where: "run" },
+        { text: "Open the VibeStudio setup deployed and run a night in it (nothing to deploy again)", where: "run" },
         { text: "Set your VibeTube event code and press publish", where: "run" },
         { text: "Your video is on the wall, the poster as its thumbnail", where: "verify" },
       ],

@@ -3,7 +3,8 @@
 # every step checks what is already there and keeps what you chose before.
 #
 # Run ./setup_project.sh FIRST: this script reads the project it recorded in
-# ~/project_id.txt. When it finishes you have:
+# ~/project_id.txt. (A plain run of that script makes a NEW project; to point
+# this lab at an existing one, VIBE_STUDIO_REUSE_PROJECT=1 ./setup_project.sh.) When it finishes you have:
 #   • uv, a .venv, and exactly what uv.lock pins inside it
 #   • the APIs this lab calls, enabled on that project
 #   • a .env that sends every model call to GEAP with your own credentials
@@ -17,7 +18,10 @@
 # also runs from another script or a container.
 #
 # The Memory Bank and the RAG corpus (sessions 6 and 4 of the lab) are started
-# in the background at the end, so the pages find them ready.
+# in the background at the end, so the pages find them ready - and so is the
+# deploy of VibeStudio to Cloud Run (session 7), so the app is live while you
+# read and the page's Post my video button has somewhere to send the night.
+# VIBE_STUDIO_SKIP_DEPLOY=1 leaves the deploy to session 7's button.
 # `sh scripts/restart.sh` runs a bash script under another shell. Re-enter under
 # bash rather than fail somewhere later on a construct sh does not have.
 [ -n "${BASH_VERSION:-}" ] || exec bash "$0" "$@"
@@ -108,7 +112,7 @@ fi
     "" \
     "Already have a project? Tell this lab about it and re-run:" \
     "  echo YOUR_PROJECT_ID > ~/project_id.txt" \
-    "  gcloud config set project YOUR_PROJECT_ID"
+    "  VIBE_STUDIO_REUSE_PROJECT=1 ./setup_project.sh"
 
 gcloud config set project "$PROJECT" -q >/dev/null 2>&1 || true
 
@@ -144,7 +148,7 @@ enable_api() {
             "Usually billing is not on the project yet, or the project is seconds old" \
             "and its IAM policy is still propagating. Wait a minute, then re-run:" \
             "" \
-            "  ./setup_project.sh    # confirms billing, waits for the project" \
+            "  VIBE_STUDIO_REUSE_PROJECT=1 ./setup_project.sh    # confirms billing, waits for THIS project" \
             "  ./setup_codelab.sh"
         for wait in 0 5 10 15 20; do
             [ "$wait" -gt 0 ] && sleep "$wait"
@@ -204,7 +208,7 @@ if [ -f "$EVENT_FILE" ]; then
     EVENT_DEFAULT="$(tr -d '[:space:]' < "$EVENT_FILE" || true)"
 fi
 [ -n "$EVENT_DEFAULT" ] || EVENT_DEFAULT="$(env_get VIBETUBE_EVENT)"
-[ -n "$EVENT_DEFAULT" ] || EVENT_DEFAULT="sandbox"      # open to anyone, at any time; an instructor gives a room of its own
+[ -n "$EVENT_DEFAULT" ] || EVENT_DEFAULT="sandbox"    # "sandbox" is open to anyone, at any time
 NAME_DEFAULT="$(env_get VIBETUBE_NAME)"
 if [ -z "$NAME_DEFAULT" ]; then
     ACCOUNT="$(gcloud config get-value account 2>/dev/null || true)"
@@ -213,7 +217,7 @@ if [ -z "$NAME_DEFAULT" ]; then
     [ -n "$NAME_DEFAULT" ] || NAME_DEFAULT="Anonymous Creator"
 fi
 
-info "the VibeTube room session 7 publishes to (codes are case-sensitive; sandbox is always open), and the name you are credited by"
+info "the VibeTube room session 7 publishes to (Enter takes sandbox, which is always open; codes are case-sensitive), and the name you are credited by"
 info "press Enter to take the [default] — both answers live in .env, editable later"
 VIBETUBE_EVENT="$(ask 'vibetube.dev event code' "$EVENT_DEFAULT")"
 VIBETUBE_NAME="$(ask 'Your name, or your channel name' "$NAME_DEFAULT")"
@@ -371,19 +375,58 @@ else
         "Read runs/lab.log, then start it by hand:  scripts/start.sh"
 fi
 
-# ── 8 · the two cloud resources, created while you read ─────────────────────
+# ── 8 · the cloud resources and the studio, created while you read ──────────
 # A corpus takes a minute or two to come up and the bank about twenty seconds.
 # Both commands create once and connect ever after, so starting them here costs
 # nothing and sessions 4 and 6 find them ready. A creation lock in agent/platform
 # keeps a click in the lab from creating a second one while these run.
-say "7 · RAG Engine and Memory Bank"
+say "7 · RAG Engine, Memory Bank, and VibeStudio on Cloud Run"
+# A cache from an earlier run can name a resource in ANOTHER project: setup_project.sh
+# made a new one, or ~/project_id.txt was written by another lab. Such a resource is
+# reachable by you from here, but never by this project's service account on Cloud
+# Run, and session 7 ends in PERMISSION_DENIED. Reading the caches through the agent
+# sets a foreign one aside (runs/*.json.stale-<project>), so what follows creates a
+# fresh resource in THIS project.
+mkdir -p runs
+.venv/bin/python -c 'from agent.platform import memory, rag; memory.engine_name(); rag.corpus_name()' 2>/dev/null | sed 's/^ *//; s/^/  · /' || true
 if [ -f runs/memorybank.json ] && [ -f runs/ragcorpus.json ]; then
-    tick "both are already connected"
+    tick "both are already connected, in this project"
 else
     [ -f runs/memorybank.json ] || nohup .venv/bin/python -m agent.platform.bank > runs/bank_setup.log 2>&1 &
     [ -f runs/ragcorpus.json ] || nohup .venv/bin/python -m agent.platform.rag > runs/rag_setup.log 2>&1 &
     info "creating them in the background; sessions 4 and 6 will find them ready"
     info "logs: runs/bank_setup.log · runs/rag_setup.log"
+fi
+
+# The app of session 7, built and deployed in the background too. Cloud Build
+# takes four or five minutes; deploy.py first waits for the bank and the corpus
+# above (their names travel with the deploy), so the service is live some seven
+# minutes from here - during session 1 or 2. The page's Post my video button
+# hands it the night from then on, and session 7 opens on an app that is
+# already running. One deploy at a time (runs/.deploy.lock); a service already
+# deployed from this project is kept and not rebuilt.
+DEPLOY_URL=""
+DEPLOY_STATE="$(.venv/bin/python - <<'PY' 2>/dev/null || true
+import json, pathlib
+try:
+    rec = json.loads(pathlib.Path("runs/deploy.json").read_text())
+except Exception:
+    rec = {}
+print(rec.get("status", "done" if rec.get("url") else ""), rec.get("url", ""), rec.get("project", ""))
+PY
+)"
+set -- $DEPLOY_STATE; DEPLOY_STATUS="${1:-}"; DEPLOY_URL="${2:-}"; DEPLOY_PROJECT="${3:-}"; set --
+if [ "${VIBE_STUDIO_SKIP_DEPLOY:-0}" = "1" ]; then
+    info "VibeStudio: not deployed now (VIBE_STUDIO_SKIP_DEPLOY=1); session 7's Deploy button does it"
+elif [ "$DEPLOY_STATUS" = "done" ] && [ "$DEPLOY_PROJECT" = "$PROJECT" ] && [ -n "$DEPLOY_URL" ] \
+     && curl -s -o /dev/null --max-time 8 "$DEPLOY_URL/api/health"; then
+    tick "VibeStudio already on Cloud Run: $DEPLOY_URL"
+elif .venv/bin/python -c 'import sys; from agent.platform.memory import creation_in_progress as p; sys.exit(0 if p("deploy") else 1)' 2>/dev/null; then
+    info "VibeStudio: a deploy is already running in the background (log: runs/deploy_setup.log)"
+else
+    nohup .venv/bin/python vibestudio/deploy.py --by setup > runs/deploy_setup.log 2>&1 &
+    info "deploying VibeStudio to Cloud Run in the background: five minutes or so after the bank and the corpus are up"
+    info "log: runs/deploy_setup.log · the page's top bar says when it is live"
 fi
 
 # ── 9 · preflight, run for you: nothing else to type ────────────────────────
@@ -411,7 +454,7 @@ printf '      stop     scripts/stop.sh\n'
 printf '      start    scripts/start.sh\n'
 printf '      restart  scripts/restart.sh   after a git pull\n\n'
 printf '  Already run for you, and repeatable at any time:\n'
-printf '      python scripts/preflight.py     re-check the environment\n'
+printf '      python scripts/preflight.py     re-check the environment (and whether VibeStudio is live yet)\n'
 printf '      ./setup_codelab.sh              re-run this script; your files are kept\n\n'
 [ "$UV_WAS_INSTALLED" -eq 1 ] && printf '  uv was just installed. Run this to get it in this shell:  source ~/.local/bin/env\n\n'
 [ -n "${WEB_HOST:-}" ] || printf '  In Cloud Shell the link is also under Web Preview → Change port → %s.\n\n' "$PORT"

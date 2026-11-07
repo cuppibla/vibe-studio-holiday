@@ -1,13 +1,13 @@
 import { Lede } from "../components/Lede";
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Copy, ExternalLink, Lightbulb, RefreshCw, TerminalSquare, X } from "lucide-react";
+import { Check, Copy, ExternalLink, Eye, EyeOff, Lightbulb, PenLine, Play, RefreshCw, TerminalSquare, X } from "lucide-react";
 import { CodeEditor } from "../components/CodeEditor";
 import { In, SectionHead, StepHeader } from "../components/shared";
 import { LoadCheck } from "../components/LoadCheck";
 import { LoadedBadge } from "../components/LoadedBadge";
 import { api, useRunEvents } from "../lib/api";
-import type { InspectorStatus, Stage1Status } from "../lib/types";
+import type { InspectorStatus, SentRun, Stage1Status } from "../lib/types";
 import { COLORS, tint } from "./colors";
 
 /*
@@ -365,7 +365,7 @@ function EdgesExercise() {
 
 /* ───────────────────────── 3a · the fan-out ───────────────────────── */
 
-export const DEFAULT_IDEA = "a tiny robot doing laundry at midnight";
+export const DEFAULT_IDEA = "a tiny snowman learning to live in the freezer";   // the same idea session 2 starts with: every run of the lab is a holiday evening
 
 const READER_CODE = `# agent/graph.py
 def scan_trends(node_input):
@@ -649,13 +649,18 @@ export function EditPanel({
   pattern: RegExp;
   onSaved: () => void;
 }) {
-  // The last hint is the answer, and clicking it writes the answer into the
-  // file: over whatever the editor holds, saved, and reloaded by adk web.
+  // The hint is always in view: it is a nudge, not the answer. The answer
+  // itself is one click to read ("Show the answer") and one obvious button to
+  // have written into the file ("Write the answer for me"): over whatever the
+  // editor holds, saved, and reloaded by adk web. `hint` keeps its old
+  // meaning for the pages, which still own it: 2 means the answer is shown.
   const [writing, setWriting] = useState(false);
   const [written, setWritten] = useState<{ ok: boolean; text: string } | null>(null);
+  const shown = hint >= 2;
   const writeAnswer = async () => {
     if (!symbol) return;
     setWriting(true);
+    setHint(() => 2);
     try {
       const d = await api.answer({ path, symbol, text: hint2 });
       window.dispatchEvent(new CustomEvent("vibe:adopt", { detail: { path } }));
@@ -668,10 +673,6 @@ export function EditPanel({
       setWriting(false);
     }
   };
-  const onHint = () => {
-    if (hint >= 1) void writeAnswer();
-    setHint((h) => Math.min(h + 1, 2));
-  };
   return (
     <section className="rounded-3xl border p-6" style={{ borderColor: tint(AMBER, 0.4), background: tint(AMBER, 0.04) }}>
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -682,28 +683,39 @@ export function EditPanel({
           <h2 className="font-display mt-2 text-2xl">{title}</h2>
           <p className="mt-2 max-w-2xl text-sm text-fg-muted">{intro}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="rounded-full border px-3 py-1 font-mono text-[11px]" style={ok ? { borderColor: tint(GREEN, 0.4), color: GREEN, background: tint(GREEN, 0.08) } : { borderColor: "var(--hairline)", color: "var(--fg-muted)" }}>
-            {pill}
-          </span>
-          <button onClick={onHint} disabled={writing} className="flex items-center gap-1.5 rounded-full border border-hairline bg-card px-3 py-1 text-xs text-fg-muted hover:text-fg disabled:opacity-60">
-            {writing ? <RefreshCw size={13} className="animate-spin" /> : <Lightbulb size={13} />} {hint === 0 ? "Hint" : hint === 1 ? "Write the answer" : "Write the answer again"}
-          </button>
-        </div>
+        <span className="shrink-0 rounded-full border px-3 py-1 font-mono text-[11px]" style={ok ? { borderColor: tint(GREEN, 0.4), color: GREEN, background: tint(GREEN, 0.08) } : { borderColor: "var(--hairline)", color: "var(--fg-muted)" }}>
+          {pill}
+        </span>
       </div>
-      {hint >= 1 && (
-        <div className="mt-4 rounded-2xl border border-hairline bg-card p-4 text-sm text-fg-muted">
-          <p>
-            <b className="text-fg">Hint 1.</b> {hint1}
+      <div className="mt-4 rounded-2xl border border-hairline bg-card p-4 text-sm text-fg-muted">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <p className="min-w-0">
+            <Lightbulb size={14} className="mr-1.5 inline-block align-[-2px]" style={{ color: AMBER }} />
+            <b className="text-fg">Hint.</b> {hint1}
           </p>
-          {hint >= 2 && <pre className="mt-2 overflow-x-auto rounded-lg bg-overlay px-3 py-2 font-mono text-[11.5px] text-fg">{hint2}</pre>}
-          {hint >= 2 && (
-            <p className="mt-2 font-mono text-[11.5px]" style={{ color: written ? (written.ok ? GREEN : RED) : "var(--fg-muted)" }}>
-              {written ? written.text : writing ? "writing…" : ""}
-            </p>
-          )}
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <button onClick={() => setHint(() => (shown ? 1 : 2))} className="flex items-center gap-1.5 rounded-full border border-hairline bg-overlay px-3 py-1.5 font-mono text-[11px] text-fg-muted hover:text-fg">
+              {shown ? <EyeOff size={13} /> : <Eye size={13} />} {shown ? "Hide the answer" : "Show the answer"}
+            </button>
+            <button
+              onClick={() => void writeAnswer()}
+              disabled={writing || !symbol}
+              title={`Replace ${symbol || "the TODO line"} in ${path} with the answer, save, and hand it to adk web`}
+              className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold text-white transition-transform hover:scale-[1.03] disabled:opacity-50"
+              style={{ background: AMBER }}
+            >
+              {writing ? <RefreshCw size={14} className="animate-spin" /> : <PenLine size={14} />}
+              {writing ? "Writing…" : written?.ok ? "Write it again" : "Write the answer for me"}
+            </button>
+          </div>
         </div>
-      )}
+        {shown && <pre className="mt-3 overflow-x-auto rounded-lg bg-overlay px-3 py-2 font-mono text-[11.5px] text-fg">{hint2}</pre>}
+        {written || writing ? (
+          <p className="mt-2 font-mono text-[11.5px]" style={{ color: written ? (written.ok ? GREEN : RED) : "var(--fg-muted)" }}>
+            {written ? written.text : "writing…"}
+          </p>
+        ) : null}
+      </div>
       {extra && <div className="mt-4">{extra}</div>}
       <div className="mt-4">
         <CodeEditor path={path} symbol={symbol} accent={AMBER} highlightPattern={pattern} onSaved={onSaved} />
@@ -724,6 +736,9 @@ export function RunPanel({
   stepTitles,
   frame,
   figure,
+  copy2,
+  sends,
+  onSent,
 }: {
   app: string;
   open: boolean;
@@ -741,15 +756,50 @@ export function RunPanel({
   frame?: { url: string; n: number } | null;
   /** A picture of this run, drawn between the intro and the instructions. */
   figure?: React.ReactNode;
+  /** A second message to send, under the third card, with its own copy button (the BLOCK run of 3b). */
+  copy2?: string;
+  /** Buttons that send a message for the student, the way adk web does, each in a new session. */
+  sends?: { label: string; message: string }[];
+  /** Called as a sent run progresses and when it ends: the page re-reads its verify rows. */
+  onSent?: () => void;
 }) {
   const [inspector, setInspector] = useState<InspectorStatus | null>(null);
   useEffect(() => {
     api.labInspector().then(setInspector).catch(() => setInspector({ up: false, url: "/inspector/dev-ui/", apps: [] }));
   }, []);
-  const url = frame?.url ?? `/inspector/dev-ui/?app=${app}`;
-  // the badge reloads the frame when the student asks it to
+  // A message sent by a button: the run as it goes, and the session it opened,
+  // which the frame shows instead of the app's start page.
+  const [sent, setSent] = useState<SentRun | null>(null);
+  const [sendError, setSendError] = useState("");
+  const sending = sent?.status === "running";
+  useEffect(() => {
+    if (!sent || sent.status !== "running") return;
+    const t = setInterval(async () => {
+      try {
+        const r = await api.sent(sent.run);
+        setSent(r);
+        onSent?.();
+      } catch (e) {
+        setSendError((e as Error).message);
+      }
+    }, 2500);
+    return () => clearInterval(t);
+  }, [sent?.run, sent?.status]); // eslint-disable-line react-hooks/exhaustive-deps
+  const send = async (message: string) => {
+    setSendError("");
+    setOpen(() => true);
+    try {
+      setSent(await api.send(app, message));
+    } catch (e) {
+      setSendError((e as Error).message);
+    }
+  };
+  const sentUrl = sent ? `/inspector/dev-ui/?app=${app}&userId=${encodeURIComponent(sent.user)}&session=${encodeURIComponent(sent.session)}` : null;
+  const url = sentUrl ?? frame?.url ?? `/inspector/dev-ui/?app=${app}`;
+  // the badge reloads the frame when the student asks it to; a sent run reloads
+  // it when it starts and once more when it ends (the dev UI never re-reads a session on its own)
   const [reloadN, setReloadN] = useState(0);
-  const frameKey = `${frame?.n ?? 0}:${reloadN}`;
+  const frameKey = `${frame?.n ?? 0}:${reloadN}:${sent ? `${sent.run}:${sent.status}` : ""}`;
   return (
     <section id={`run-${app}`} className="rounded-3xl border p-6" style={{ borderColor: tint(BLUE, 0.33), background: tint(BLUE, 0.04) }}>
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -786,8 +836,47 @@ export function RunPanel({
         </Instruction>
         <Instruction n={3} title={stepTitles?.[1] ?? "Then"}>
           <p className="mt-2 text-xs text-fg-muted">{steps[1]}</p>
+          {copy2 && <CopyLine text={copy2} />}
         </Instruction>
       </ol>
+
+      {sends && sends.length > 0 && (
+        <div className="mt-4 rounded-2xl border border-hairline bg-card p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <p className="text-sm text-fg-muted">
+              Or let the page send it: each button opens a <b className="text-fg">new session</b> in adk web and sends the message exactly as you would type it.
+            </p>
+            <div className="flex shrink-0 flex-wrap gap-2">
+              {sends.map((sd) => (
+                <button
+                  key={sd.label}
+                  onClick={() => send(sd.message)}
+                  disabled={sending || !(inspector?.up ?? true)}
+                  className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white transition-transform hover:scale-[1.03] disabled:opacity-60 disabled:hover:scale-100"
+                  style={{ background: BLUE }}
+                  title={sd.message}
+                >
+                  {sending ? <RefreshCw size={14} className="animate-spin" /> : <Play size={14} />}
+                  {sd.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          {(sent || sendError) && (
+            <p className="mt-3 break-words font-mono text-[11px]" style={{ color: sendError || sent?.status === "error" ? "var(--vibe-red)" : sent?.status === "done" ? GREEN : "var(--fg-muted)" }}>
+              {sendError ? sendError : sent ? (
+                <>
+                  {sent.status === "running" ? "running" : sent.status} · "{sent.message}" · session {sent.session.slice(0, 8)}
+                  {sent.trail.length ? ` · ${sent.trail.join(" → ")}` : ""}
+                  {sent.routes.length ? ` · ${sent.routes.join(", ")}` : ""}
+                  {sent.error ? ` · ${sent.error}` : ""}
+                  {sent.status === "done" ? " · the verify rows below have it" : ""}
+                </>
+              ) : null}
+            </p>
+          )}
+        </div>
+      )}
 
       {open && (
         <div className="mt-5 overflow-hidden rounded-2xl border border-hairline bg-card">

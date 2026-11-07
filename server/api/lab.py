@@ -7,12 +7,14 @@ for. Nothing here greps source or trusts the page; it reads events.
 from __future__ import annotations
 
 import ast
+import asyncio
 import json
 import os
 import re
 import subprocess
 import sys
 import time
+import uuid
 from collections import Counter
 
 from fastapi import APIRouter, HTTPException
@@ -377,6 +379,19 @@ def _mode_kw(path, name: str) -> str | None:
     return None
 
 
+def _policy_hits(text: str) -> list[str]:
+    """The refused words in `text`, the way policy_check finds them: whole
+    words from agent/policy_words.txt. Read here, not imported from the
+    student's agent/graph.py, so a half-edited file cannot take the server down."""
+    try:
+        words = [w.strip().lower() for w in (ROOT / "agent" / "policy_words.txt").read_text().splitlines()
+                 if w.strip() and not w.strip().startswith("#")]
+    except OSError:
+        return []
+    low = text.lower()
+    return [w for w in words if re.search(rf"\b{re.escape(w)}\b", low)]
+
+
 def policy_route_wired(path=ROOT / "agent" / "graph.py") -> bool:
     """Does policy_check end in `return Event(..., route=...)`."""
     try:
@@ -422,6 +437,14 @@ async def stage3():
     cleaned_script_title = ""              # the script written in that same session, after the cleanup
     blocked_message = ""
     script_title = ""
+    # the last run, as the student saw it: what the stand-in gate took and why,
+    # which exit the router named, and the words that decided it. The BLOCK
+    # row reads these to say what to change when no run has been refused yet.
+    last_idea = ""
+    last_gate = ""
+    last_route = ""
+    last_hits: list[str] = []
+    last_run_nodes: list[str] = []
     for _, sess in sessions:
         finished_task = False
         sess_cleaned: dict | None = None
@@ -430,9 +453,22 @@ async def stage3():
             name = _node_name(ev)
             if name and name != "stage3_router" and name not in nodes:
                 nodes.append(name)
+            if getattr(ev, "author", "") == "user":            # a new run starts: the last-run record starts over
+                texts = _texts(ev)
+                last_idea, last_gate, last_route, last_hits, last_run_nodes = (texts[0] if texts else ""), "", "", [], []
+            if name and name != "stage3_router" and name not in last_run_nodes:
+                last_run_nodes.append(name)
             route = getattr(getattr(ev, "actions", None), "route", None)
+            if name == "choose_direction":
+                for text in _texts(ev):
+                    if text.startswith("stand-in gate"):
+                        last_gate = text[:200]
             if name == "policy_check" and route:
                 routes.append(route)
+                last_route = route
+                out = getattr(ev, "output", None)
+                out = out.model_dump() if hasattr(out, "model_dump") else (out if isinstance(out, dict) else {})
+                last_hits = _policy_hits(f"{out.get('title', '')} {out.get('angle', '')}")
             if name == "quarantine":
                 for f in ev.get_function_calls() or []:
                     tool_calls[f.name] = tool_calls.get(f.name, 0) + 1
@@ -474,6 +510,8 @@ async def stage3():
         "routes": routes,
         "ok_runs": routes.count("OK"),
         "block_runs": routes.count("BLOCK"),
+        "last_run": {"idea": last_idea[:200], "gate": last_gate, "route": last_route, "hits": last_hits,
+                     "nodes": last_run_nodes, "picked_4": "candidate 4" in last_gate},
         "tool_calls": tool_calls,
         "cleaned": cleaned,
         "cleaned_script_title": cleaned_script_title,
@@ -879,36 +917,76 @@ async def video_status():
 
 
 # ── step 9 · deploy the app ──────────────────────────────────────────────────
+# Setup starts the deploy in the background (nohup vibestudio/deploy.py --by
+# setup), so by the time the page asks, the app is usually being built or
+# already live. deploy.py holds runs/.deploy.lock for its whole run and keeps
+# runs/deploy.json current (deploying · done · failed), whoever started it.
 
 DEPLOY_SCRIPT = ROOT / "vibestudio" / "deploy.py"
 DEPLOY_RECORD = config.RUNS / "deploy.json"
+DEPLOY_SETUP_LOG = config.RUNS / "deploy_setup.log"
+
+
+def _deploying() -> bool:
+    try:
+        from agent.platform.memory import creation_in_progress
+        return creation_in_progress("deploy")
+    except Exception:
+        return False
 
 
 @router.post("/deploy")
 async def deploy_run():
-    """Run `python vibestudio/deploy.py` as a worker; its output streams on the
-    event bus with verb "deploy". The service URL lands in runs/deploy.json."""
+    """Run `python vibestudio/deploy.py --by page` as a worker; its output
+    streams on the event bus with verb "deploy". The service URL lands in
+    runs/deploy.json. One deploy at a time: setup's, in the background, counts."""
     from ..services.workers import workers
     if "deploy" in workers.running():
         return {"ok": False, "detail": "a deploy is still running"}
-    ok, detail = await workers.start_script("deploy", str(DEPLOY_SCRIPT))
+    if _deploying():
+        return {"ok": False, "detail": "setup's deploy is still running in the background (runs/deploy_setup.log); wait for it"}
+    ok, detail = await workers.start_script("deploy", str(DEPLOY_SCRIPT), "--by", "page")
     return {"ok": ok, "detail": detail}
 
 
+def _tail(path, n: int = 12) -> list[str]:
+    try:
+        lines = [l for l in path.read_text(errors="replace").splitlines() if l.strip() and not re.search(r"Warning|warn\(", l)]
+    except OSError:
+        return []
+    return lines[-n:]
+
+
 @router.get("/deploy/status")
-async def deploy_status():
+async def deploy_status(probe: bool = False):
+    """Where the deploy stands, whoever started it: the record, the lock, the
+    log's tail; with probe=1, whether the service answers /api/health."""
     from ..services.workers import workers
     last = workers.last_exit() or {}
-    record = {}
-    if DEPLOY_RECORD.exists():
+    record = _read_json(DEPLOY_RECORD)
+    worker_live = "deploy" in workers.running()
+    in_progress = worker_live or _deploying()
+    status = record.get("status") or ("done" if record.get("url") else "")
+    if in_progress:
+        status = "deploying"
+    elif status == "deploying":
+        status = "interrupted"                 # the record never ended and nothing holds the lock: the process died
+    by = record.get("by", "") or ("page" if worker_live else "")
+    log = DEPLOY_SETUP_LOG if by == "setup" else config.RUNS / "deploy_run.log"
+    reachable = None
+    if probe and record.get("url"):
+        import httpx
         try:
-            record = json.loads(DEPLOY_RECORD.read_text())
-        except ValueError:
-            record = {}
-    return {"running": "deploy" in workers.running(),
+            async with httpx.AsyncClient(timeout=6, follow_redirects=True) as c:
+                reachable = (await c.get(f"{record['url']}/api/health")).status_code == 200
+        except Exception:
+            reachable = False
+    return {"running": in_progress, "worker": worker_live, "status": status, "by": by,
+            "started_at": record.get("started_at"), "detail": record.get("detail", ""), "seconds": record.get("seconds"),
             "last_exit": last if last.get("verb") == "deploy" else None,
             "url": record.get("url", ""), "service": record.get("service", ""), "project": record.get("project", ""),
-            "region": record.get("region", ""), "at": record.get("at"),
+            "region": record.get("region", ""), "at": record.get("at"), "reachable": reachable,
+            "log_tail": _tail(log) if (in_progress or status in ("failed", "interrupted")) else [],
             "gcloud_project": os.environ.get("GOOGLE_CLOUD_PROJECT", ""),
             "app_built": (ROOT / "vibestudio" / "web" / "dist" / "index.html").exists()}
 
@@ -1041,7 +1119,143 @@ async def publish_run(body: dict | None = None):
     return {"ok": True, "detail": "publishing: the app posts the clip with the poster as its thumbnail; check again in a few seconds"}
 
 
+# ── Post my video · tonight, as far as it has got, through the studio ────────
+# The button on every page (web/src/components/PostDock.tsx). Setup deployed
+# VibeStudio in the background; from then on scripts/post.py hands the app the
+# newest poster and clip the sessions left in runs/ (or a push-in over the
+# poster, when no clip exists yet) as a finished night, and presses publish
+# there - the app makes the one request to the room, as 7b teaches. This
+# server says what there is to post and where the app is, runs the script as a
+# worker so its output streams, and reads VibeTube back for the verify rows.
+# server/services/night.py has the reading; the record is runs/post.json.
+
+POST_SCRIPT = ROOT / "scripts" / "post.py"
+
+
+@router.get("/post/status")
+async def post_status(code: str | None = None, live: bool = True):
+    """What would go out (the poster, the clip, the title), who posts where,
+    the studio (the deploy's state, and - live - whether it answers), the last
+    post's record, and - live - the room's window now, the card VibeTube lists,
+    and whether its thumbnail is the poster, byte for byte."""
+    from ..services import night
+    from ..services.workers import workers
+    n = await night.night()
+    prof = night.profile()
+    rec = night.record()
+    stu = night.studio()
+    stu["deploying"] = stu["status"] == "deploying"
+    stu["reachable"] = None
+    out: dict = {"night": n, "profile": prof, "studio": stu, "last": rec, "posting": "post" in workers.running(),
+                 "run": workers.run_id("post"), "room": None, "video": None, "thumbnail_match": None}
+    if not live:
+        return out
+    if stu["url"]:
+        state = await asyncio.to_thread(night.app_state, stu["url"], 8)
+        stu["reachable"] = state is not None
+        stu["run_status"] = (state or {}).get("status", "")
+        stu["active"] = (state or {}).get("active") or ""
+        stu["nodes_seen"] = (state or {}).get("nodes_seen") or []
+        stu["render_checks"] = ((state or {}).get("render") or {}).get("checks") or 0
+        stu["run_title"] = ((state or {}).get("script") or {}).get("title") or ""
+        stu["publish"] = {k: ((state or {}).get("publish") or {}).get(k) for k in ("status", "video_id", "url", "detail", "attempts")}
+    probe = (code or prof["event_code"] or "").strip()
+    if probe:
+        out["room"] = await asyncio.to_thread(night.room, probe, prof["platform_url"])
+    if rec.get("video_id") and rec.get("event_code"):
+        v = await asyncio.to_thread(night.video, rec["event_code"], rec["video_id"], rec.get("platform_url") or prof["platform_url"])
+        out["video"] = v
+        sent = rec.get("poster") or ""
+        if v and v.get("thumbnail_url") and sent and (sent.startswith(("http://", "https://")) or os.path.exists(sent)):
+            out["thumbnail_match"] = await asyncio.to_thread(night.thumbnail_matches, v["thumbnail_url"], sent)
+    return out
+
+
+@router.post("/post")
+async def post_run(body: dict | None = None):
+    """Run `python scripts/post.py` as a worker (verb "post"); its output
+    streams on the event bus and the result lands in runs/post.json."""
+    from ..services.workers import workers
+    body = body or {}
+    if "post" in workers.running():
+        return {"ok": False, "detail": "a post is still going out"}
+    args: list[str] = []
+    for key, flag in (("title", "--title"), ("description", "--description"), ("event_code", "--event"), ("display_name", "--name"), ("app", "--app")):
+        val = body.get(key)
+        if isinstance(val, str) and val.strip():
+            args += [flag, val.strip()]
+    if body.get("push_in"):
+        args.append("--push-in")
+    if isinstance(body.get("night"), str):
+        args += ["--night", body["night"].strip()]
+    ok, detail = await workers.start_script("post", str(POST_SCRIPT), *args)
+    return {"ok": ok, "detail": detail, "run": workers.run_id("post")}
+
+
 # ── jumping between steps: the registry, from the page ──────────────────────
+
+# ── a message the page sends for the student ────────────────────────────────
+# The Run panel's buttons ("Run the OK route", "Run the BLOCK route"): one
+# message to a stage app, sent the way adk web sends it - a NEW session under
+# adk web's own user id, on the dev UI's own Runner (the same caches a save
+# evicts, the same session store the verify rows read). The run goes on in
+# the background; the page follows it at /sent/{run} and opens the session
+# in the adk web frame, so what the student sees is what typing would show.
+SENT: dict[str, dict] = {}
+SENT_USER = "user"                       # the id the dev UI runs under
+
+
+@router.post("/send/{app}")
+async def send_message(app: str, body: dict):
+    from ..services import reload as agent_reload
+    if app not in STAGE_APPS:
+        raise HTTPException(404, f"unknown app {app!r}")
+    srv = agent_reload.handle.server
+    if srv is None:
+        raise HTTPException(503, "adk web is not attached to this server; type the message in adk web")
+    message = str(body.get("message") or "").strip()
+    if not message:
+        raise HTTPException(400, "the message is empty")
+    runner = await srv.get_runner_async(app)                     # what adk web would run right now
+    session = await srv.session_service.create_session(app_name=app, user_id=SENT_USER)
+    rec = SENT[session.id] = {
+        "run": session.id, "app": app, "user": SENT_USER, "session": session.id, "message": message,
+        "status": "running", "trail": [], "routes": [], "events": 0, "error": "",
+        "started": time.time(), "ended": None,
+    }
+    asyncio.create_task(_drive_sent(rec, runner))
+    return rec
+
+
+async def _drive_sent(rec: dict, runner) -> None:
+    from google.genai import types as gt
+    from ..services.events import bus
+    try:
+        msg = gt.Content(role="user", parts=[gt.Part(text=rec["message"])])
+        async for ev in runner.run_async(user_id=rec["user"], session_id=rec["session"], new_message=msg):
+            rec["events"] += 1
+            name = _node_name(ev)
+            if name and name != rec["app"] and (not rec["trail"] or rec["trail"][-1] != name):
+                rec["trail"].append(name)
+            route = getattr(getattr(ev, "actions", None), "route", None)
+            if name and route:
+                rec["routes"].append(f"{name} → {route}")
+        rec["status"] = "done"
+    except Exception as e:  # the page shows it; the session keeps what ran
+        rec["status"] = "error"
+        rec["error"] = f"{type(e).__name__}: {e}"[:300]
+    finally:
+        rec["ended"] = time.time()
+        bus.mark_dirty()                      # the verify rows re-read sessions.db
+
+
+@router.get("/sent/{run}")
+async def sent_status(run: str):
+    rec = SENT.get(run)
+    if rec is None:
+        raise HTTPException(404, "no such run (the server restarted?)")
+    return rec
+
 
 @router.get("/holes")
 async def holes_status():
@@ -1085,7 +1299,7 @@ async def version():
             "subject": _git("log", "-1", "--format=%s")}
 
 
-WORKER_VERBS = ("bank", "rag", "deliver", "deploy")
+WORKER_VERBS = ("bank", "rag", "deliver", "deploy", "post")
 
 
 @router.get("/worker/{verb}/log")
@@ -1135,3 +1349,29 @@ async def holes_fill(body: dict):
         filled.append(name + (f" (saved, but {err})" if err else ""))
     bus.mark_dirty()
     return {"filled": filled}
+
+
+@router.post("/holes/carve")
+async def holes_carve(body: dict):
+    """The inverse of /holes/fill, one hole at a time: put the shipped TODO
+    line back where the answer is, so a student who finds a step already
+    done (the catch-up button, scripts/rescue.py, a file left over from an
+    earlier run) can make the edit themselves. Only shipped holes."""
+    from checks.holes import HOLES
+    from scripts.carve import SHIP_HOLES
+    from ..services import reload as agent_reload
+    from ..services.events import bus
+    from .code import _write
+    names = [n for n in (body.get("names") or []) if n in HOLES and n in SHIP_HOLES]
+    carved = []
+    for name in names:
+        rel, anchor, snippet = HOLES[name]
+        p = ROOT / rel
+        src = p.read_text()
+        if snippet not in src:
+            continue
+        _write(p, src.replace(snippet, anchor, 1))
+        err = agent_reload.after_save_report(rel)
+        carved.append(name + (f" (saved, but {err})" if err else ""))
+    bus.mark_dirty()
+    return {"carved": carved}

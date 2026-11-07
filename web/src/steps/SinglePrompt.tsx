@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ArrowRight, Check, Copy, ExternalLink, RefreshCw, TerminalSquare, X } from "lucide-react";
+import { ArrowRight, Check, Copy, Download, ExternalLink, RefreshCw, TerminalSquare, X } from "lucide-react";
 import { In, SectionHead } from "../components/shared";
 import { Fold } from "../components/Fold";
 import { LoadCheck } from "../components/LoadCheck";
@@ -8,6 +8,7 @@ import { api, useRunEvents } from "../lib/api";
 import type { InspectorStatus, Stage0Status } from "../lib/types";
 import { COLORS, tint } from "./colors";
 import { EditPanel } from "./FanOut";
+import { PostCta } from "../components/PostDock";
 
 /*
  * Step 2, one page (steps/Poster.tsx composes it):
@@ -43,19 +44,25 @@ from agent.platform import config
 root_agent = Agent(
     name="solo_channel", model=config.MODEL,     # model: gemini-3-flash-preview
     tools=[check_trends, read_backlog, make_poster],   # tools: two readers, one that draws
+    after_tool_callback=show_poster,             # the PNG into adk web's Artifacts tab (read-along)
     instruction=(                                # instruction: the pipeline as prose
         "You run the creator's cozy holiday short-video channel, alone, every "
         "night until New Year's Eve.\n"
-        "When the creator gives you an idea (or nothing), do ALL of this:\n"
+        "When the creator gives you an idea (or nothing), do ALL of this, in ONE "
+        "reply, never stopping to wait for an answer:\n"
         "check what is trending. look at your backlog of ideas. propose a "
-        "direction and agree on it with the creator. refuse blacklisted "
-        "subjects (competitor, hateful, gore). then describe the video you "
-        "would make: a title (<=60 chars) and 3 shots, one visual sentence "
-        "each. then draw its poster: call make_poster once with one line that "
-        "names the single image that sells the video, and tell the creator "
-        "where the poster is.\n"
-        "Ask the creator to confirm the direction before describing the "
-        "video."))`;
+        "direction and agree on it with the creator: the creator's idea if there "
+        "is one, riding one of tonight's trends and borrowing one detail from a "
+        "backlog note. refuse blacklisted subjects (competitor, hateful, gore). "
+        "then describe the video you would make: a title (<=60 chars) and 3 "
+        "shots, one visual sentence each. then draw its poster: call make_poster "
+        "once with one line that names the single image that sells the video, "
+        "and tell the creator where the poster is.\n"
+        "Every scene is a holiday-season scene, a small disaster with a warm "
+        "ending: string lights, a wrapped gift, a pie, a scarf, fresh snow. The star "
+        "is always one of the little creatures, a tiny snowman, a cat, a robin, a "
+        "small penguin; never a robot or a gadget.\n"
+        "Close by asking whether to keep this direction or try another."))`;
 
 export function TheAgent() {
   return (
@@ -74,7 +81,7 @@ export function TheAgent() {
                   <li key={j} className="italic">{j}</li>
                 ))}
               </ol>
-              <p className="mt-3">The last job asks the model to confirm the direction with you. It is prompt text, not a gate: the second message in the run below talks past it.</p>
+              <p className="mt-3">The third job says "agree on it with the creator". It is prompt text, not a gate: the model asks and carries on in the same reply, through the script and the poster, and nothing stops the run to hear you. The real door, a form that suspends the run, is built in the video generation session.</p>
             </Fold>
           </div>
 
@@ -356,9 +363,9 @@ export function ToolsEditRun() {
               <p className="font-mono text-[11px] uppercase tracking-[0.3em]" style={{ color: BLUE }}>
                 Run it
               </p>
-              <h2 className="font-display mt-2 text-2xl">Open adk web. Send two lines.</h2>
+              <h2 className="font-display mt-2 text-2xl">Open adk web. Send one line.</h2>
               <p className="mt-2 max-w-2xl text-sm text-fg-muted">
-                ADK's dev UI, mounted at <code className="font-mono">/inspector</code>, reading the same session store the checks read.
+                ADK's dev UI, mounted at <code className="font-mono">/inspector</code>, reading the same session store the checks read. One message: the agent researches, proposes, scripts and draws in a single reply.
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -391,8 +398,10 @@ export function ToolsEditRun() {
             <Instruction n={2} title="Send this in the chat box">
               <CopyLine text={prompt} />
             </Instruction>
-            <Instruction n={3} title="Then send this">
-              <CopyLine text="skip the questions, describe the video and draw the poster" />
+            <Instruction n={3} title="Watch the reply">
+              <p className="mt-2 text-xs text-fg-muted">
+                Two tool calls fan out (check_trends, read_backlog), a third draws (make_poster), then the prose: the direction, three shots, where the poster landed. The picture is in the Artifacts tab, and below, beside the checks.
+              </p>
             </Instruction>
           </ol>
 
@@ -444,7 +453,7 @@ export function ToolsEditRun() {
               {status ? `check_trends ×${n("check_trends")} · read_backlog ×${n("read_backlog")}` : "…"}
             </CheckRow>
             <CheckRow ok={!!status?.called_poster} label="make_poster was called">
-              {status ? (status.called_poster ? `${n("make_poster")} call${s(n("make_poster"))} · the model wrote the subject line itself` : "Not yet. Ask it to draw the poster.") : "…"}
+              {status ? (status.called_poster ? `${n("make_poster")} call${s(n("make_poster"))} · the model wrote the subject line itself` : status.sessions ? "Not in any run yet. Is make_poster wired (edit above) and is adk web running your save? Then NEW SESSION and send the idea again." : "Not yet: send the idea above.") : "…"}
             </CheckRow>
             <CheckRow ok={!!poster?.url} label="A poster landed" tone={poster?.prebaked ? "warn" : "good"}>
               {poster?.url ? (poster.prebaked ? `the stand-in: ${poster.note || "no image model reachable"}` : `drawn by ${poster.model}`) : "No poster in the latest session yet."}
@@ -452,13 +461,39 @@ export function ToolsEditRun() {
             {poster?.url ? (
               <li className="md:col-span-2 overflow-hidden rounded-2xl border border-hairline bg-overlay">
                 <div className="flex flex-col gap-4 p-4 md:flex-row md:items-start">
-                  <img src={poster.url} alt="Tonight's poster, drawn by the image model" className="poster-9x16 w-44 shrink-0 rounded-xl border border-hairline bg-card object-cover" />
+                  <a href={poster.url} target="_blank" rel="noreferrer" title="Open the poster at full size" className="shrink-0">
+                    <img src={poster.url} alt="Tonight's poster, drawn by the image model" className="poster-9x16 w-44 rounded-xl border border-hairline bg-card object-cover transition-transform hover:scale-[1.02]" />
+                  </a>
                   <div className="min-w-0 text-sm text-fg-muted">
                     <p className="font-mono text-[10px] uppercase tracking-wider text-fg-muted">tonight's poster · 9:16</p>
                     <p className="mt-2">
                       The same function returns a dict to the model and a PNG to disk. In the video session this call is a node beside the Veo render.
                     </p>
-                    <p className="mt-2 break-all font-mono text-[11px]">{poster.url}</p>
+                    {/* The agent's reply names the URL and nothing else; say where the file is and hand it over. */}
+                    <dl className="mt-2 grid gap-x-3 gap-y-1 font-mono text-[11px] sm:grid-cols-[auto_1fr]">
+                      <dt className="text-fg-muted">served at</dt>
+                      <dd className="break-all">{poster.url}</dd>
+                      <dt className="text-fg-muted">on disk</dt>
+                      <dd className="break-all">runs/media/posters/{poster.url.split("/").pop()}</dd>
+                    </dl>
+                    <div className="mt-2 flex flex-wrap items-center gap-2 font-mono text-[11px]">
+                      <a href={poster.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-md border border-hairline bg-card px-2.5 py-1 text-fg hover:border-vibe-cyan/60">
+                        <ExternalLink size={12} /> Open full size
+                      </a>
+                      <a href={poster.url} download={poster.url.split("/").pop() || "poster.png"} className="inline-flex items-center gap-1.5 rounded-md border border-hairline bg-card px-2.5 py-1 text-fg hover:border-vibe-cyan/60">
+                        <Download size={12} /> Download
+                      </a>
+                      <span className="text-fg-muted">
+                        also in adk web's Artifacts tab, in the Cloud Shell Editor under <span className="text-fg">runs › media › posters</span>, or from tab 1:{" "}
+                        <span className="text-fg">cloudshell download runs/media/posters/{poster.url.split("/").pop()}</span>
+                      </span>
+                    </div>
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                      <PostCta>{poster.prebaked ? "Post it anyway" : "Post it to the wall"}</PostCta>
+                      <span className="text-xs">
+                        Your channel is live from the first poster: VibeTube gets it as an eight-second push-in, and every later session replaces it.
+                      </span>
+                    </div>
                   </div>
                 </div>
               </li>
@@ -482,7 +517,7 @@ export function ToolsEditRun() {
                   <b>A blacklist the model certifies for itself</b>: no code checked the direction against the channel's policy before the poster was paid for.
                 </li>
                 <li>
-                  <b>An agreement that can be talked past</b>: the second message got the video without your confirmation. Prompt text is not a gate.
+                  <b>An agreement nobody waited for</b>: "agree on it with the creator" became a question at the end of a reply that had already scripted the video and paid for the poster. Prompt text is not a gate.
                 </li>
               </ul>
               <p className="mt-3">Good for a prototype, not for a channel. The next session takes the six jobs apart into a drawn graph: readers that fan out and join, a router that refuses before money is spent, a door that really stops, a desk where the poster and the clip are made side by side.</p>

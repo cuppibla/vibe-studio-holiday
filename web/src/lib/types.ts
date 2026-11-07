@@ -95,6 +95,9 @@ export interface Stage3Status {
   routes: string[];
   ok_runs: number;
   block_runs: number;
+  /** The last run, as the student saw it: the idea sent, what the stand-in gate took and why,
+   *  the exit the router named, the words that decided it, and the nodes that ran. */
+  last_run?: { idea: string; gate: string; route: string; hits: string[]; nodes: string[]; picked_4: boolean };
   script_routes: string[];
   revise_runs: number;
   revise_notes: string[];
@@ -109,6 +112,21 @@ export interface Stage3Status {
   angle: string | null;
   hook: string | null;
   state_keys: string[];
+}
+
+/** A message the page sent to a stage app for the student (the Run panel's buttons):
+ *  the session it opened under adk web's user, and the run as it goes. */
+export interface SentRun {
+  run: string;
+  app: string;
+  user: string;
+  session: string;
+  message: string;
+  status: "running" | "done" | "error";
+  trail: string[];
+  routes: string[];
+  events: number;
+  error: string;
 }
 
 /** Evidence for step 5b: the two memory callbacks in stage4_memory/agent.py, the bank, and the latest run. */
@@ -216,7 +234,20 @@ export interface Stage6Status {
 }
 
 export interface DeployStatus {
+  /** A deploy is going on: the page's worker, or setup's in the background (runs/.deploy.lock). */
   running: boolean;
+  /** The page's own worker is the one running. */
+  worker: boolean;
+  /** "" · deploying · done · failed · interrupted */
+  status: string;
+  /** setup · page · terminal */
+  by: string;
+  started_at: number | null;
+  detail: string;
+  seconds: number | null;
+  /** With probe=1: does the service answer /api/health. */
+  reachable: boolean | null;
+  log_tail: string[];
   last_exit: { code: number; at: number } | null;
   url: string;
   service: string;
@@ -240,4 +271,71 @@ export interface PublishStatus {
   thumbnail_match: boolean | null;
   thumbnail_bytes?: number[];
   video_error?: string;
+}
+
+/** Post my video: tonight, as far as it has got, and what VibeTube says (server/api/lab.py · post). */
+export interface PostNight {
+  poster: { path: string; url: string; prebaked: boolean; at: number; source: string } | null;
+  clip: { path: string; url: string; prebaked: boolean; duration_ms: number; at: number; source: string } | null;
+  title: string;
+  description: string;
+  shots: string[];
+  words_source: string;
+  /** The idea the student gave the session-2 agent, the default for an unattended night. */
+  idea: string;
+  ffmpeg: boolean;
+  real_video: boolean;
+  veo_model: string;
+}
+
+export interface PostRecord {
+  status?: "posting" | "done" | "failed";
+  /** "app" when the app ran the whole night from an idea. */
+  night?: string;
+  idea?: string;
+  at?: number;
+  done_at?: number;
+  title?: string;
+  event_code?: string;
+  display_name?: string;
+  platform_url?: string;
+  project_id?: string;
+  clip?: string;
+  poster?: string;
+  attempts?: number;
+  video_id?: string;
+  url?: string;
+  detail?: string;
+}
+
+/** Where the app is: the deploy's record, and (live) whether it answers. */
+export interface StudioStatus {
+  url: string;
+  status: string;
+  by: string;
+  started_at: number | null;
+  at: number | null;
+  detail: string;
+  project: string;
+  region: string;
+  deploying: boolean;
+  reachable: boolean | null;
+  run_status?: string;
+  active?: string;
+  nodes_seen?: string[];
+  render_checks?: number;
+  run_title?: string;
+  publish?: { status?: string | null; video_id?: string | null; url?: string | null; detail?: string | null; attempts?: number | null };
+}
+
+export interface PostStatus {
+  night: PostNight;
+  profile: { platform_url: string; event_code: string; display_name: string; project_id: string };
+  studio: StudioStatus;
+  last: PostRecord & { app_url?: string };
+  posting: boolean;
+  run: string | null;
+  room: { code: string; name: string; open: boolean; state: string; reason: string; url: string } | null;
+  video: { id: string; status: string; title: string; channel: string; thumbnail_url: string; watch_url: string; project_id: string } | null;
+  thumbnail_match: boolean | null;
 }

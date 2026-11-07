@@ -105,10 +105,25 @@ def _in_progress(name: str) -> bool:
         return False
 
 
+def _home(cache: str) -> bool | None:
+    """Does the cached resource live in this project? None when it cannot be told."""
+    try:
+        import json
+        from agent.platform.memory import in_this_project
+        return in_this_project(json.loads((ROOT / "runs" / cache).read_text())["name"])
+    except Exception:
+        return None
+
+
 for label, cache, lock, step in (("Memory Bank", "memorybank.json", ".memorybank.lock", "6"),
                                  ("RAG corpus", "ragcorpus.json", ".ragcorpus.lock", "4")):
     if (ROOT / "runs" / cache).exists():
-        print(f"  ✓ {label} connected")
+        home = _home(cache)
+        if home is False:
+            print(f"  ✗ {label}: runs/{cache} names a resource in ANOTHER project; session 7's service account cannot reach it. "
+                  f"./setup_codelab.sh sets it aside and makes one here")
+        else:
+            print(f"  ✓ {label} connected" + (" (this project)" if home else ""))
     elif _in_progress(lock.strip(".").removesuffix(".lock")):
         print(f"  - {label}: still being created in the background")
     else:
@@ -130,6 +145,33 @@ try:
          ("missing " + " ".join(_missing) + " · " if _missing else "") + "./setup_codelab.sh grants the roles (needs a project Owner)")
 except Exception:
     pass
+
+# VibeStudio on Cloud Run: setup deploys it in the background, so "still being
+# deployed" is a normal answer for seven minutes or so after setup. When a URL
+# is known, the service is asked whether it answers.
+_dep = {}
+try:
+    _dep = json.loads((ROOT / "runs" / "deploy.json").read_text())
+except Exception:
+    pass
+_dep_status = _dep.get("status") or ("done" if _dep.get("url") else "")
+if _dep_status == "done" and _dep.get("url"):
+    try:
+        with urllib.request.urlopen(f"{_dep['url']}/api/health", timeout=8) as r:
+            _live = r.status == 200
+    except Exception:
+        _live = False
+    _age = f", {int((__import__('time').time() - _dep['at']) // 60)} min ago" if _dep.get("at") else ""
+    _who = f"deployed by {_dep['by']}{_age}" if _dep.get("by") else f"deployed{_age}"
+    tick(f"VibeStudio on Cloud Run answers at {_dep['url']} ({_who})", _live,
+         "the service is not answering; python vibestudio/deploy.py deploys it again")
+elif _in_progress("deploy"):
+    _since = f" since {int((__import__('time').time() - _dep['started_at']) // 60)} min" if _dep.get("started_at") else ""
+    print(f"  - VibeStudio: still being deployed in the background{_since} (log: runs/deploy_setup.log); the page's top bar says when it is live")
+elif _dep_status == "failed":
+    print(f"  ! VibeStudio: the deploy failed: {(_dep.get('detail') or '')[:100]} · see runs/deploy_setup.log; session 7's Deploy button, or python vibestudio/deploy.py, tries again")
+else:
+    print("  - VibeStudio: not deployed yet (./setup_codelab.sh starts it in the background; session 7's Deploy button does it too)")
 
 port = os.environ.get("PORT", "4600")
 try:

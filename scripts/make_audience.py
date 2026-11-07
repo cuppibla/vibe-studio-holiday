@@ -13,7 +13,9 @@ Four kinds, forty things, all about the channel's six past holiday videos:
 AUDIENCE.md lists every item and how it was made. The readers in
 agent/platform/audience.py turn each kind into one line of text for the corpus.
 
-Needs: GOOGLE_API_KEY in .env (AI Studio; the TTS models are served there), ffmpeg on PATH.
+Needs ffmpeg on PATH, and one of the lab's two auth paths for the TTS voices:
+STUDIO_VERTEX=1 (Cloud Shell: the project's ADC, the global endpoint) or
+GOOGLE_API_KEY in .env (AI Studio).
 """
 from __future__ import annotations
 
@@ -45,7 +47,7 @@ turned into text, and `read_feedback` retrieves the passages closest to tonight'
 - "A tiny snowman learning to live in the freezer" — @lena.draws: The ice cube tray sliding over one inch at a time to make room is perfect. Small magic in small rooms, please more.
 - "Gravy boat heist, filmed like a bank job" — @quietquinn: Way too dark in the first five seconds. I could not see the mouse's cape.
 - "My cat judging this year's holiday sweaters" — @mira_k: The slow blink at the snowflake sweater is the funniest thing I have seen all week.
-- "Teaching a robot to wrap a gift" — @dev_tomas: Honestly this one felt like an ad for the wrapping paper. Less product, more robot failing.
+- "A tiny penguin wrapping its first gift" — @dev_tomas: Honestly this one felt like an ad for the wrapping paper. Less product, more penguin getting it wrong.
 - "A robin moves into the string lights" — @nightowl_ari: The robin hugging the bulb like a pillow. I replayed it nine times.
 - "The scarecrow after harvest just wants a sweater" — @fantasyfern: Did not expect to tear up at a scarecrow. The ending where it is finally warm, chef's kiss.
 - "A tiny snowman learning to live in the freezer" — @roro_h: Captions covered the snowman's face for the whole second half. Move the text or drop it.
@@ -53,14 +55,14 @@ turned into text, and `read_feedback` retrieves the passages closest to tonight'
 - "Gravy boat heist, filmed like a bank job" — @jjthebuilder: The fridge light as the spotlight was the only good part. Cut the rest.
 - "The scarecrow after harvest just wants a sweater" — @knitwit: The sweater texture in low-poly looked like actual wool. How?
 - "A robin moves into the string lights" — @sleepy.sam: The ending was too fast. Let the robin settle in for one more second.
-- "Teaching a robot to wrap a gift" — @ribbonpat: The crooked bow at the end. I want that as the poster.
+- "A tiny penguin wrapping its first gift" — @ribbonpat: The crooked bow at the end. I want that as the poster.
 """
 
 VOICE_NOTES = [
     ("note-01", "Kore", "The freezer snowman one made my kid laugh so hard. Please do more small magic in small rooms."),
     ("note-02", "Puck", "Gravy heist was perfect, but it was way too dark at the start. I couldn't see the mouse."),
     ("note-03", "Zephyr", "I want a whole series of the cat judging sweaters. The slow blink at the snowflake sweater. Chef's kiss."),
-    ("note-04", "Charon", "The gift robot felt like an ad for the wrapping paper. Less product, more robot being bad at it."),
+    ("note-04", "Charon", "The gift penguin felt like an ad for the wrapping paper. Less product, more penguin being bad at it."),
     ("note-05", "Fenrir", "The robin in the lights was so cozy. Can you do one where it moves into the fridge light next?"),
     ("note-06", "Aoede", "Scarecrow sweater made me tear up. The ending where it finally gets warm. More endings like that."),
     ("note-07", "Leda", "The captions covered the snowman's face for the whole second half. Move the text, or drop it."),
@@ -81,17 +83,16 @@ CLIPS = [
 
 
 def _client():
-    os.environ.pop("GOOGLE_GENAI_USE_VERTEXAI", None)
+    """The TTS client, on the lab's own auth path: Vertex through ADC when
+    STUDIO_VERTEX=1 (the TTS models live on the global endpoint), else an AI
+    Studio key."""
     from google import genai
+    if config.VERTEX:
+        return genai.Client(vertexai=True, project=os.environ.get("GOOGLE_CLOUD_PROJECT"), location="global")
+    os.environ.pop("GOOGLE_GENAI_USE_VERTEXAI", None)
     key = os.environ.get("GOOGLE_API_KEY")
     if not key:
-        env = pathlib.Path.home() / "Documents/agentic-handbook/.env"      # her AI Studio key, where the art scripts read it
-        if env.exists():
-            import re
-            m = re.search(r"GOOGLE_API_KEY=(\S+)", env.read_text())
-            key = m.group(1) if m else None
-    if not key:
-        raise SystemExit("GOOGLE_API_KEY is needed for the TTS voices (AI Studio)")
+        raise SystemExit("the TTS voices need STUDIO_VERTEX=1 (ADC) or GOOGLE_API_KEY (AI Studio) in .env")
     return genai.Client(api_key=key)
 
 
@@ -111,7 +112,9 @@ def say(client, text: str, voice: str, wav: pathlib.Path) -> None:
 
 
 def ff(*args: str) -> None:
-    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *args], check=True)
+    # -nostdin: ffmpeg otherwise reads the terminal for keypresses, and a run in
+    # the background (a job, a worker) is stopped by the shell the moment it tries
+    subprocess.run(["ffmpeg", "-y", "-nostdin", "-loglevel", "error", *args], check=True, stdin=subprocess.DEVNULL)
 
 
 def main() -> None:
