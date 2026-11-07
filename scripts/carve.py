@@ -17,8 +17,33 @@ from checks.holes import HOLES  # noqa: E402
 SHIP_HOLES = ["POSTER_TOOL", "FANOUT", "ROUTER", "INGEST_READERS", "RAG_MEDIA", "GATE", "VIDEO_TOOL", "DELIVER_RESPONSE", "STATE_SHARE", "MEMORY_RECALL", "MEMORY_REMEMBER"]   # EDGES ships FILLED: students read the edge list, they do not type it
 
 
+def refresh(rel: str) -> int:
+    """scripts/restart.sh --pull: a pull changed starter/<rel>, so replace the
+    live <rel> with the new starter copy, keeping every hole the way the
+    student has it: a hole that was filled in the live file is filled again
+    in the new copy. Exit 2 when the live file has drifted from the registry
+    (a hole neither open nor filled), so the caller can say so and not touch it."""
+    live, fresh = ROOT / rel, ROOT / "starter" / rel
+    if not live.exists() or not fresh.exists():
+        return 1
+    src, new = live.read_text(), fresh.read_text()
+    for name, (hole_rel, anchor, snippet) in HOLES.items():
+        if hole_rel != rel:
+            continue
+        if snippet in src:
+            if anchor not in new:
+                return 2
+            new = new.replace(anchor, snippet, 1)
+        elif anchor not in src:
+            return 2
+    live.write_text(new)
+    return 0
+
+
 def main():
     args = sys.argv[1:]
+    if args[:1] == ["--refresh"]:
+        sys.exit(refresh(args[1]))
     names = (list(HOLES) if "--all" in args else
              [a for a in args if a in HOLES] or SHIP_HOLES)
     for name in names:

@@ -32,7 +32,21 @@ say "Restarting the learning center"
 
 if [ "${1:-}" = "--pull" ]; then
     info "git pull"
+    BEFORE="$(git rev-parse HEAD)"
     git pull --ff-only || { printf '\n  git pull failed; nothing was restarted.\n\n' >&2; exit 1; }
+    # The nine student files are not in git: setup copied them from starter/
+    # once, and a pull changes starter/ only. When a pull brought a fix to a
+    # starter file, carry it into the live copy - with the student's holes
+    # kept exactly as they are (filled stays filled, open stays open), which
+    # is what scripts/carve.py does with a fresh starter copy.
+    for f in $(git diff --name-only "$BEFORE" HEAD -- starter/ | sed 's#^starter/##'); do
+        [ -f "$f" ] || continue
+        if .venv/bin/python scripts/carve.py --refresh "$f" 2>/dev/null; then
+            info "refreshed $f from starter/ (your edits kept)"
+        else
+            warn "$f changed in starter/ but could not be refreshed; cp starter/$f $f and redo its edits, or scripts/rescue.py"
+        fi
+    done
 fi
 
 stop_lab
